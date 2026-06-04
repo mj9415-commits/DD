@@ -521,17 +521,59 @@ let S = {
   notifs: [],
 };
 
+// ══════════════════════════════════════════
+// localStorage 持久化核心
+// 所有變動都存入本機，重新整理後自動還原
+// ══════════════════════════════════════════
+const LS_KEYS = { users:'derp_users', orders:'derp_orders', notifs:'derp_notifs', session:'derp_session' };
+
+function lsSave(){
+  try{
+    localStorage.setItem(LS_KEYS.users,  JSON.stringify(S.users));
+    localStorage.setItem(LS_KEYS.orders, JSON.stringify(S.orders));
+    localStorage.setItem(LS_KEYS.notifs, JSON.stringify(S.notifs));
+  }catch(e){ console.warn('localStorage write error',e); }
+}
+
+function lsLoad(){
+  try{
+    // 帳號：若已有存檔則用存檔（保留密碼異動），否則用預設
+    const su=localStorage.getItem(LS_KEYS.users);
+    if(su){
+      const saved=JSON.parse(su);
+      // 若預設清單有新增帳號，合併進去
+      S.users.forEach(def=>{
+        if(!saved.find(u=>u.id===def.id)) saved.push(def);
+      });
+      S.users=saved;
+    } else {
+      lsSave(); // 首次：把預設資料寫入
+    }
+    const so=localStorage.getItem(LS_KEYS.orders);
+    if(so) S.orders=JSON.parse(so);
+    const sn=localStorage.getItem(LS_KEYS.notifs);
+    if(sn) S.notifs=JSON.parse(sn);
+  }catch(e){ console.warn('localStorage read error',e); }
+}
+
+function lsSessionSave(userId){
+  try{ localStorage.setItem(LS_KEYS.session, userId||''); }catch(e){}
+}
+function lsSessionGet(){
+  try{ return localStorage.getItem(LS_KEYS.session)||''; }catch(e){ return ''; }
+}
+function lsSessionClear(){
+  try{ localStorage.removeItem(LS_KEYS.session); }catch(e){}
+}
+
+// 每次資料變動後呼叫，確保跨分頁/重整都能同步
+function saveAll(){ lsSave(); }
+
 // ── AUTH ──
 const isHQ=()=>S.user?.role==='hq';
 const isMob=()=>window.innerWidth<=600;
 
-function doLogin(){
-  const u=document.getElementById('li-user').value.trim();
-  const p=document.getElementById('li-pass').value.trim();
-  const found=S.users.find(x=>x.username===u&&x.password===p);
-  const errEl=document.getElementById('li-err');
-  if(!found){errEl.style.display='block';errEl.textContent='帳號或密碼錯誤';return;}
-  errEl.style.display='none';
+function applyLogin(found){
   S.user=found;
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -540,38 +582,59 @@ function doLogin(){
   const b=document.getElementById('hd-badge');
   b.className=found.role==='hq'?'badge-hq':'badge-store';
   b.textContent=found.role==='hq'?'總部':'門市';
+  lsSessionSave(found.id);
   buildSidebar();
   if(found.role==='store'&&(Date.now()-found.pwAt)>_3M){
-    document.getElementById('pw-overlay').style.display='flex';return;
+    document.getElementById('pw-overlay').style.display='flex'; return;
   }
-  showPage('dashboard');renderDash();
+  showPage('dashboard'); renderDash();
 }
+
+function doLogin(){
+  const u=document.getElementById('li-user').value.trim();
+  const p=document.getElementById('li-pass').value.trim();
+  // 每次登入前重新讀取最新資料（確保拿到最新密碼）
+  lsLoad();
+  const found=S.users.find(x=>x.username===u&&x.password===p);
+  const errEl=document.getElementById('li-err');
+  if(!found){errEl.style.display='block';errEl.textContent='帳號或密碼錯誤';return;}
+  errEl.style.display='none';
+  applyLogin(found);
+}
+
 function doLogout(){
   S.user=null;
+  lsSessionClear();
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
 }
+
 function forcePwChange(){
   const n=document.getElementById('pwe-new').value.trim();
   const c=document.getElementById('pwe-cfm').value.trim();
   if(n.length<4){toast('密碼至少4碼','danger');return;}
   if(n!==c){toast('兩次密碼不一致','danger');return;}
   const idx=S.users.findIndex(u=>u.id===S.user.id);
-  S.users[idx].password=n;S.users[idx].pwAt=Date.now();S.user=S.users[idx];
+  S.users[idx].password=n; S.users[idx].pwAt=Date.now(); S.user=S.users[idx];
+  saveAll(); // ← 立即寫入 localStorage
   document.getElementById('pw-overlay').style.display='none';
-  showPage('dashboard');renderDash();toast('密碼已更換成功','success');
+  showPage('dashboard'); renderDash(); toast('密碼已更換成功','success');
 }
+
 function changePw(){
   const o=document.getElementById('cpw-old').value;
   const n=document.getElementById('cpw-new').value;
   const c=document.getElementById('cpw-cfm').value;
-  if(S.user.password!==o){toast('目前密碼錯誤','danger');return;}
+  // 比對最新密碼（從 S.users 取，不用 S.user 快取）
+  const latest=S.users.find(u=>u.id===S.user.id);
+  if(!latest||latest.password!==o){toast('目前密碼錯誤','danger');return;}
   if(n.length<4){toast('新密碼至少4碼','danger');return;}
   if(n!==c){toast('兩次密碼不一致','danger');return;}
   const idx=S.users.findIndex(u=>u.id===S.user.id);
-  S.users[idx].password=n;S.users[idx].pwAt=Date.now();S.user=S.users[idx];
+  S.users[idx].password=n; S.users[idx].pwAt=Date.now(); S.user=S.users[idx];
+  saveAll(); // ← 立即寫入 localStorage
   ['cpw-old','cpw-new','cpw-cfm'].forEach(id=>document.getElementById(id).value='');
-  toast('密碼已更換','success');
+  toast('密碼已成功更換，下次登入請使用新密碼','success');
 }
 
 // ── SIDEBAR ──
@@ -714,6 +777,7 @@ function batchAction(newStatus){
     if(newStatus==='shipping') addNotif('ship','🚚 訂單出貨通知',`訂單 ${o.id} 已出貨，請注意收貨`,o.sid);
   });
   renderOrderTable();buildSidebar();
+  saveAll();
   toast(`${ok.length} 張訂單已更新為「${stMap[newStatus]}」`,'success');
 }
 function batchPrint(){
@@ -727,14 +791,16 @@ function confirmOrd(id){
   const o=S.orders.find(x=>x.id===id);
   o.status='confirmed';o.confirmedBy=S.user.username;o.confirmedAt=new Date().toLocaleString('zh-TW');
   addNotif('confirm','✅ 訂單已確認',`訂單 ${o.id} 已確認，預計 ${o.delivery||'近期'} 出貨`,o.sid);
+  saveAll();
   renderOrderTable();toast(`${o.id} 已確認`,'success');buildSidebar();
 }
 function shipOrd(id){
   const o=S.orders.find(x=>x.id===id);o.status='shipping';
   addNotif('ship','🚚 訂單出貨通知',`訂單 ${o.id} 已出貨，請注意收貨`,o.sid);
+  saveAll();
   renderOrderTable();toast('已標記出貨中','success');
 }
-function doneOrd(id){S.orders.find(x=>x.id===id).status='done';renderOrderTable();toast('訂單完成');}
+function doneOrd(id){S.orders.find(x=>x.id===id).status='done';saveAll();renderOrderTable();toast('訂單完成');}
 
 function viewOrder(id){
   const o=S.orders.find(x=>x.id===id);
@@ -816,6 +882,7 @@ function saveHqEdit(){
   o.note=document.getElementById('he-note').value;
   o.items=S._cartItems;
   o.total=S._cartItems.reduce((s,i)=>s+(i.qty*i.price),0);
+  saveAll();
   closeM('modal-order');renderOrderTable();toast('訂單已更新','success');
 }
 
@@ -845,6 +912,7 @@ function doMerge(){
     items:ords.flatMap(o=>o.items),total:ords.reduce((s,o)=>s+o.total,0),
   };
   S.orders=S.orders.filter(o=>!ids.includes(o.id));S.orders.push(m);
+  saveAll();
   closeM('modal-merge');renderOrderTable();toast('已合併為 '+m.id,'success');
 }
 
@@ -1216,6 +1284,7 @@ function buildOrder(status){
 function saveDraft(){
   if(!S._cartItems.length){toast('請加入至少一項商品','danger');return;}
   S.orders.push(buildOrder('draft'));
+  saveAll();
   closeM('modal-order');S._cartItems=[];renderStoreOrder();toast('草稿已儲存');
 }
 function submitOrder(){
@@ -1223,6 +1292,7 @@ function submitOrder(){
   const o=buildOrder('pending');
   S.orders.push(o);
   addNotif('new','📦 新訂單待確認',`${o.sname} 提交訂單 ${o.id}，請審核`,'HQ');
+  saveAll();
   closeM('modal-order');S._cartItems=[];renderStoreOrder();toast('訂單已送出！等待總部確認','success');
 }
 
@@ -1283,7 +1353,7 @@ function saveProd(){
   if(S._editProdId){const idx=S.products.findIndex(x=>x.id===S._editProdId);if(idx>=0)S.products[idx]=p;else S.products.push(p);}
   else S.products.push(p);
   S._editProdId=null;document.getElementById('prod-form-title').textContent='新增品項';
-  resetProdForm();renderProdList();toast('品項已儲存','success');
+  resetProdForm();renderProdList();saveAll();toast('品項已儲存','success');
 }
 function loadProd(id){
   const p=S.products.find(x=>x.id===id);S._editProdId=id;
@@ -1305,7 +1375,7 @@ function loadProd(id){
 }
 function delProd(id){
   if(!confirm('確定刪除？'))return;
-  S.products=S.products.filter(p=>p.id!==id);renderProdList();toast('已刪除');
+  S.products=S.products.filter(p=>p.id!==id);saveAll();renderProdList();toast('已刪除');
 }
 function resetProdForm(){
   ['p-code','p-name','p-spec','p-cat','p-supplier','p-cost','p-price','p-stock','p-swarn','p-note'].forEach(id=>{const el=document.getElementById(id);if(el) el.value='';});
@@ -1401,7 +1471,7 @@ function adjStock(id){
   const v=prompt(`調整「${p.name}」庫存（目前：${p.stock}）`,p.stock);
   if(v===null)return;const n=parseInt(v);
   if(isNaN(n)){toast('請輸入數字','danger');return;}
-  p.stock=n;renderStock();toast('庫存已更新');
+  p.stock=n;saveAll();renderStock();toast('庫存已更新');
 }
 
 // USERS
@@ -1460,16 +1530,17 @@ function saveUser(){
   };
   if(S._editUserId){const idx=S.users.findIndex(x=>x.id===S._editUserId);S.users[idx]=u;}
   else S.users.push(u);
-  closeM('modal-user');renderUsers();toast('帳號已儲存','success');
+  closeM('modal-user');renderUsers();saveAll();toast('帳號已儲存','success');
 }
 function delUser(id){
   if(!confirm('確定刪除？'))return;
-  S.users=S.users.filter(u=>u.id!==id);renderUsers();toast('已刪除');
+  S.users=S.users.filter(u=>u.id!==id);saveAll();renderUsers();toast('已刪除');
 }
 
 // NOTIFS
 function addNotif(type,title,body,sid){
   S.notifs.unshift({id:Date.now(),type,title,body,sid,time:new Date().toLocaleString('zh-TW'),read:false});
+  saveAll();
   buildSidebar();
 }
 function renderNotifs(){
@@ -1486,7 +1557,7 @@ function renderNotifs(){
     </div>
   `).join(''):'<div style="color:var(--text3);text-align:center;padding:2rem;">目前沒有通知</div>';
 }
-function markRead(id){const n=S.notifs.find(x=>x.id===id);if(n)n.read=true;renderNotifs();buildSidebar();}
+function markRead(id){const n=S.notifs.find(x=>x.id===id);if(n)n.read=true;saveAll();renderNotifs();buildSidebar();}
 
 // MODAL HELPERS
 function openM(id){document.getElementById(id).classList.add('open');}
@@ -1501,6 +1572,25 @@ function toast(msg,type=''){
   document.getElementById('toast').appendChild(i);
   setTimeout(()=>i.remove(),3200);
 }
+
+// ══════════════════════════════════════════
+// 頁面初始化：載入 localStorage → 自動還原登入
+// ══════════════════════════════════════════
+(function init(){
+  lsLoad(); // 先讀取所有儲存的資料
+
+  const savedId = lsSessionGet();
+  if(savedId){
+    const found = S.users.find(u=>u.id===savedId);
+    if(found){
+      // 自動還原登入狀態，不需要重新輸入帳密
+      applyLogin(found);
+      return;
+    }
+  }
+  // 沒有 session 或找不到帳號 → 顯示登入畫面
+  document.getElementById('login-screen').style.display='flex';
+})();
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display!=='none')doLogin();});
 </script>
