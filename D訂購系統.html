@@ -203,7 +203,7 @@ table tr:hover td{background:#f8fafd;}
       <div class="field"><label>密碼</label><input type="password" id="li-pass" placeholder="輸入密碼" autocomplete="current-password"></div>
       <div id="li-err" style="display:none;background:var(--danger-bg);color:var(--danger);font-size:12.5px;padding:8px 12px;border-radius:7px;"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;font-size:14px;" onclick="doLogin()">登入</button>
-      <div style="font-size:11px;color:var(--text3);text-align:center;">총部帳號：HQ_admin ／ admin2024</div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;">如有問題請聯繫總部</div>
     </div>
   </div>
 </div>
@@ -239,12 +239,10 @@ table tr:hover td{background:#f8fafd;}
       <!-- HQ ORDERS -->
       <div id="page-orders" class="page">
         <div class="page-header"><div class="page-title">📦 訂單管理</div></div>
-        <div class="actions-row">
-          <div style="display:flex;gap:7px;flex-wrap:wrap;">
-            <button class="btn btn-outline btn-sm" onclick="openMergeModal()">合併訂單</button>
-            <button class="btn btn-outline btn-sm" onclick="printConfirmed()">🖨 列印出貨單</button>
-          </div>
-          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+
+        <!-- 篩選列 -->
+        <div class="actions-row" style="margin-bottom:8px;">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
             <select id="f-status" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;" onchange="renderOrderTable()">
               <option value="">全部狀態</option>
               <option value="draft">草稿</option><option value="pending">待確認</option>
@@ -254,7 +252,26 @@ table tr:hover td{background:#f8fafd;}
               <option value="">全部門市</option>
             </select>
           </div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="openMergeModal()">合併訂單</button>
+          </div>
         </div>
+
+        <!-- 批次操作列 -->
+        <div style="background:var(--surface2);border:1px solid var(--border-light);border-radius:9px;padding:10px 14px;margin-bottom:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;cursor:pointer;">
+            <input type="checkbox" id="chk-all" onchange="toggleAllChk(this.checked)" style="width:15px;height:15px;">
+            全選
+          </label>
+          <div style="width:1px;height:22px;background:var(--border);margin:0 4px;"></div>
+          <span style="font-size:12px;color:var(--text2);">勾選後批次：</span>
+          <button class="btn btn-success btn-sm" onclick="batchAction('confirmed')">✅ 批次確認</button>
+          <button class="btn btn-sm" style="background:var(--info);color:#fff;" onclick="batchAction('shipping')">🚚 批次出貨</button>
+          <button class="btn btn-sm" style="background:#555;color:#fff;" onclick="batchAction('done')">☑ 批次完成</button>
+          <button class="btn btn-sm" style="background:var(--accent);color:#fff;" onclick="batchPrint()">🖨 批次列印出貨單</button>
+          <span id="batch-count" style="margin-left:auto;font-size:12px;color:var(--text3);">已選 0 張</span>
+        </div>
+
         <div class="card table-wrap" id="orders-wrap"></div>
       </div>
 
@@ -641,9 +658,14 @@ function renderOrderTable(){
   const fst=document.getElementById('f-store')?.value||'';
   if(fs) ords=ords.filter(o=>o.status===fs);
   if(fst) ords=ords.filter(o=>o.sid===fst);
+  S._filteredOrds=ords; // 存供批次用
   document.getElementById('orders-wrap').innerHTML=`
-    <table><thead><tr><th>訂單號</th><th>門市</th><th>日期</th><th>到貨日</th><th>金額</th><th>狀態</th><th>操作</th></tr></thead>
-    <tbody>${ords.map(o=>`<tr>
+    <table><thead><tr>
+      <th style="width:32px;"></th>
+      <th>訂單號</th><th>門市</th><th>日期</th><th>到貨日</th><th>金額</th><th>狀態</th><th>操作</th>
+    </tr></thead>
+    <tbody>${ords.map(o=>`<tr id="row-${o.id}">
+      <td><input type="checkbox" class="ord-chk" value="${o.id}" onchange="updateBatchCount()" style="width:15px;height:15px;cursor:pointer;"></td>
       <td style="font-size:11px;font-family:monospace;color:var(--info);cursor:pointer;" onclick="viewOrder('${o.id}')">${o.id}</td>
       <td>${o.sname}</td><td>${o.date}</td><td>${o.delivery||'—'}</td>
       <td style="font-weight:700;">$${o.total.toLocaleString()}</td>
@@ -658,6 +680,47 @@ function renderOrderTable(){
       </div></td>
     </tr>`).join('')}</tbody></table>
   `;
+  updateBatchCount();
+}
+function toggleAllChk(checked){
+  document.querySelectorAll('.ord-chk').forEach(c=>c.checked=checked);
+  updateBatchCount();
+}
+function updateBatchCount(){
+  const n=document.querySelectorAll('.ord-chk:checked').length;
+  const el=document.getElementById('batch-count');
+  if(el) el.textContent=`已選 ${n} 張`;
+  const allChk=document.getElementById('chk-all');
+  const total=document.querySelectorAll('.ord-chk').length;
+  if(allChk) allChk.indeterminate=(n>0&&n<total);
+  if(allChk&&n===total&&total>0) allChk.checked=true;
+  if(allChk&&n===0) allChk.checked=false;
+}
+function getCheckedIds(){
+  return [...document.querySelectorAll('.ord-chk:checked')].map(c=>c.value);
+}
+function batchAction(newStatus){
+  const ids=getCheckedIds();
+  if(!ids.length){toast('請先勾選訂單','danger');return;}
+  const stMap={confirmed:'已確認',shipping:'出貨中',done:'已完成'};
+  const prevMap={confirmed:'pending',shipping:'confirmed',done:'shipping'};
+  const ok=ids.filter(id=>{const o=S.orders.find(x=>x.id===id);return o&&o.status===prevMap[newStatus];});
+  if(!ok.length){toast(`無符合條件的訂單可執行此操作\n（需為：${({confirmed:'待確認',shipping:'已確認',done:'出貨中'})[newStatus]}狀態）`,'danger');return;}
+  ok.forEach(id=>{
+    const o=S.orders.find(x=>x.id===id);
+    o.status=newStatus;
+    if(newStatus==='confirmed'){o.confirmedBy=S.user.username;o.confirmedAt=new Date().toLocaleString('zh-TW');
+      addNotif('confirm','✅ 訂單已確認',`訂單 ${o.id} 已確認，預計 ${o.delivery||'近期'} 出貨`,o.sid);}
+    if(newStatus==='shipping') addNotif('ship','🚚 訂單出貨通知',`訂單 ${o.id} 已出貨，請注意收貨`,o.sid);
+  });
+  renderOrderTable();buildSidebar();
+  toast(`${ok.length} 張訂單已更新為「${stMap[newStatus]}」`,'success');
+}
+function batchPrint(){
+  const ids=getCheckedIds();
+  if(!ids.length){toast('請先勾選要列印的訂單','danger');return;}
+  const ords=ids.map(id=>S.orders.find(o=>o.id===id)).filter(Boolean);
+  openPrintWin(buildPrint(ords));
 }
 function stBadge(s){const m={draft:'草稿',pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};return`<span class="status status-${s}">${m[s]||s}</span>`;}
 function confirmOrd(id){
@@ -794,38 +857,161 @@ function printConfirmed(){
 }
 function buildPrint(ords){
   const stMap={draft:'草稿',pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
-  return`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>出貨單</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Noto Sans TC',sans-serif;padding:16px;font-size:12.5px;color:#1a2840;}
-  h1{text-align:center;font-size:17px;color:#1a3a5c;margin-bottom:3px;}
-  .sub{text-align:center;color:#666;font-size:11px;margin-bottom:14px;}
-  .blk{border:1.5px solid #1a3a5c;border-radius:8px;padding:14px;margin-bottom:14px;break-inside:avoid;}
-  .hg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;background:#f4f6fa;padding:7px;border-radius:6px;margin-bottom:10px;}
-  .hf label{font-size:10px;color:#666;}.hf div{font-weight:600;}
-  table{width:100%;border-collapse:collapse;font-size:12px;}
-  th{background:#1a3a5c;color:#fff;padding:5px 8px;text-align:left;}
-  td{padding:5px 8px;border-bottom:1px solid #e0e8f0;}
-  tfoot td{font-weight:700;background:#f4f6fa;}
-  @media print{body{padding:3px;}}</style></head><body>
-  <h1>D訂購系統 — 出貨單</h1>
-  <div class="sub">列印時間：${new Date().toLocaleString('zh-TW')}</div>
-  ${ords.map(o=>`<div class="blk">
-    <div class="hg">
-      <div class="hf"><label>訂單號</label><div>${o.id}</div></div>
-      <div class="hf"><label>門市</label><div>${o.sname}</div></div>
-      <div class="hf"><label>狀態</label><div>${stMap[o.status]}</div></div>
-      <div class="hf"><label>訂單日期</label><div>${o.date}</div></div>
-      <div class="hf"><label>預計到貨</label><div>${o.delivery||'—'}</div></div>
-      <div class="hf"><label>備註</label><div>${o.note||'—'}</div></div>
+  const now=new Date().toLocaleString('zh-TW');
+  const pages=ords.map(o=>`
+<div class="page-wrap">
+  <!-- 頁眉 -->
+  <div class="doc-header">
+    <div>
+      <div class="doc-title">D訂購系統 — 出貨單</div>
+      <div class="doc-sub">列印時間：${now}</div>
     </div>
-    <table><thead><tr><th>品號</th><th>品名</th><th>規格</th><th>單位</th><th>數量</th><th>售價</th><th>小計</th></tr></thead>
-    <tbody>${o.items.map(i=>`<tr><td>${i.code}</td><td>${i.name}</td><td>${i.spec||''}</td><td>${i.unit}</td><td>${i.qty}</td><td>$${i.price.toLocaleString()}</td><td>$${(i.qty*i.price).toLocaleString()}</td></tr>`).join('')}</tbody>
-    <tfoot><tr><td colspan="6" style="text-align:right;">總計</td><td>$${o.total.toLocaleString()}</td></tr></tfoot></table>
-    ${o.confirmedBy?`<div style="font-size:10.5px;color:#888;margin-top:6px;text-align:right;">確認：${o.confirmedBy}｜${o.confirmedAt}</div>`:''}
-  </div>`).join('')}
-  <script>window.onload=()=>window.print()<\/script></body></html>`;
+    <div class="doc-badge">${stMap[o.status]||o.status}</div>
+  </div>
+
+  <!-- 訂單基本資訊 -->
+  <div class="info-grid">
+    <div class="info-cell"><div class="info-lbl">訂單編號</div><div class="info-val mono">${o.id}</div></div>
+    <div class="info-cell"><div class="info-lbl">門市名稱</div><div class="info-val">${o.sname}</div></div>
+    <div class="info-cell"><div class="info-lbl">訂單日期</div><div class="info-val">${o.date}</div></div>
+    <div class="info-cell"><div class="info-lbl">預計到貨日</div><div class="info-val">${o.delivery||'—'}</div></div>
+    <div class="info-cell"><div class="info-lbl">確認人員</div><div class="info-val">${o.confirmedBy||'—'}</div></div>
+    <div class="info-cell"><div class="info-lbl">確認時間</div><div class="info-val">${o.confirmedAt||'—'}</div></div>
+    ${o.note?`<div class="info-cell" style="grid-column:1/-1;"><div class="info-lbl">備註</div><div class="info-val">${o.note}</div></div>`:''}
+  </div>
+
+  <!-- 貨品核對表 -->
+  <div class="section-title">📦 貨品核對表</div>
+  <table class="goods-table">
+    <thead>
+      <tr>
+        <th style="width:28px;">✓</th>
+        <th style="width:60px;">品號</th>
+        <th>品名</th>
+        <th style="width:100px;">規格</th>
+        <th style="width:45px;">單位</th>
+        <th style="width:50px;">訂購量</th>
+        <th style="width:55px;">實收量</th>
+        <th style="width:65px;">售價</th>
+        <th style="width:75px;">小計</th>
+        <th style="width:80px;">備註</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${o.items.map((i,idx)=>`<tr class="${idx%2===1?'row-alt':''}">
+        <td class="chk-cell"><div class="chk-box"></div></td>
+        <td class="mono">${i.code}</td>
+        <td>${i.name}</td>
+        <td class="spec">${i.spec||''}</td>
+        <td class="center">${i.unit}</td>
+        <td class="center bold">${i.qty}</td>
+        <td class="rcv-cell"><div class="rcv-line"></div></td>
+        <td class="right">$${i.price.toLocaleString()}</td>
+        <td class="right bold">$${(i.qty*i.price).toLocaleString()}</td>
+        <td></td>
+      </tr>`).join('')}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="7" style="text-align:right;font-weight:700;padding:7px 10px;background:#f4f6fa;">合計金額</td>
+        <td colspan="2" style="font-weight:700;font-size:14px;padding:7px 10px;background:#f4f6fa;text-align:right;">$${o.total.toLocaleString()}</td>
+        <td style="background:#f4f6fa;"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- 簽收欄 -->
+  <div class="sign-section">
+    <div class="sign-title">📝 簽收確認欄</div>
+    <div class="sign-grid">
+      <div class="sign-cell">
+        <div class="sign-lbl">收貨確認</div>
+        <div class="sign-note">□ 全數到齊　□ 數量異常　□ 品質異常</div>
+        <div class="sign-line-area">
+          <div class="sign-row"><span>異常說明：</span><div class="sign-line" style="flex:1;"></div></div>
+          <div class="sign-row"><span>　　　　　</span><div class="sign-line" style="flex:1;"></div></div>
+        </div>
+      </div>
+      <div class="sign-cell">
+        <div class="sign-lbl">收貨人簽名</div>
+        <div class="sign-box"></div>
+        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
+      </div>
+      <div class="sign-cell">
+        <div class="sign-lbl">送貨人簽名</div>
+        <div class="sign-box"></div>
+        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
+      </div>
+      <div class="sign-cell">
+        <div class="sign-lbl">主管確認</div>
+        <div class="sign-box"></div>
+        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-foot">D訂購系統 | 本單一式兩份，門市留存一份，司機攜回一份</div>
+  <div class="cut-line">✂ ─────────────────────────────────────────────────────────</div>
+</div>
+`).join('');
+
+  return`<!DOCTYPE html>
+<html lang="zh-TW"><head><meta charset="UTF-8"><title>出貨單</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC',sans-serif;font-size:12px;color:#1a2840;background:#fff;}
+.page-wrap{padding:18px 20px;max-width:800px;margin:0 auto;page-break-after:always;}
+.page-wrap:last-child{page-break-after:avoid;}
+.doc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2.5px solid #1a3a5c;}
+.doc-title{font-size:18px;font-weight:700;color:#1a3a5c;letter-spacing:1px;}
+.doc-sub{font-size:10.5px;color:#666;margin-top:3px;}
+.doc-badge{padding:5px 16px;background:#1a3a5c;color:#fff;border-radius:6px;font-size:12px;font-weight:700;align-self:center;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1.5px solid #c0cfe0;border-radius:7px;overflow:hidden;margin-bottom:14px;}
+.info-cell{padding:7px 11px;border-right:1px solid #c0cfe0;border-bottom:1px solid #c0cfe0;}
+.info-cell:nth-child(3n){border-right:none;}
+.info-cell:nth-last-child(-n+3){border-bottom:none;}
+.info-lbl{font-size:9.5px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.info-val{font-size:12.5px;font-weight:600;color:#1a2840;}
+.mono{font-family:monospace;}
+.section-title{font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.goods-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:11.5px;}
+.goods-table th{background:#1a3a5c;color:#fff;padding:6px 8px;text-align:left;font-size:11px;}
+.goods-table td{padding:6px 8px;border-bottom:1px solid #dde6f0;vertical-align:middle;}
+.goods-table tfoot td{border-top:2px solid #1a3a5c;}
+.row-alt{background:#f8fafd;}
+.chk-cell{text-align:center;}
+.chk-box{width:14px;height:14px;border:1.5px solid #666;border-radius:2px;margin:auto;}
+.rcv-cell{text-align:center;}
+.rcv-line{border-bottom:1.5px solid #333;height:20px;margin:0 4px;}
+.spec{font-size:10.5px;color:#666;}
+.center{text-align:center;}
+.right{text-align:right;}
+.bold{font-weight:700;}
+.sign-section{border:1.5px solid #c0cfe0;border-radius:8px;padding:12px 14px;margin-bottom:12px;}
+.sign-title{font-size:12.5px;font-weight:700;color:#1a3a5c;margin-bottom:10px;}
+.sign-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;}
+.sign-cell{display:flex;flex-direction:column;gap:6px;}
+.sign-lbl{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;}
+.sign-note{font-size:10.5px;color:#444;line-height:1.7;}
+.sign-line-area{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
+.sign-row{display:flex;align-items:flex-end;gap:4px;font-size:10.5px;color:#444;}
+.sign-line{border-bottom:1px solid #444;height:18px;}
+.sign-box{border:1.5px solid #bbb;border-radius:4px;height:60px;background:#fafafa;}
+.sign-date-row{display:flex;align-items:flex-end;gap:4px;font-size:10.5px;color:#666;margin-top:3px;}
+.page-foot{font-size:9.5px;color:#888;text-align:center;margin-top:4px;}
+.cut-line{font-size:10px;color:#bbb;margin-top:10px;letter-spacing:2px;}
+@media print{
+  body{background:#fff;}
+  .page-wrap{padding:12px 14px;max-width:100%;}
+  .cut-line{display:none;}
 }
-function openPrintWin(h){const w=window.open('','_blank','width=800,height=700');w.document.write(h);w.document.close();}
+</style></head><body>
+${pages}
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+}
+function openPrintWin(h){const w=window.open('','_blank','width=900,height=750');w.document.write(h);w.document.close();}
 
 // ── STORE ORDER ──
 function renderStoreOrder(){S._cartItems=[];isMob()?renderMobOrder():renderDesktopOrder();}
