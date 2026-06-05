@@ -288,41 +288,122 @@ table tr:hover td{background:#f8fafd;}
         <div class="card table-wrap" id="my-orders-wrap"></div>
       </div>
 
-      <!-- PRODUCTS -->
+      <!-- HQ ORDER FOR STORE -->
+      <div id="page-order-for-store" class="page">
+        <div class="page-header"><div class="page-title">🛒 幫門市下單</div><div class="page-sub">由總部人員代替門市補叫貨</div></div>
+        <div class="card" style="margin-bottom:1rem;padding:10px 14px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <label style="font-size:13px;font-weight:700;">代替門市：</label>
+            <select id="ofs-store" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13.5px;min-width:180px;">
+              <option value="">— 請選擇門市 —</option>
+              ${''/* populated dynamically */}
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="startOrderForStore()">開始下單</button>
+          </div>
+        </div>
+        <div id="ofs-body"></div>
+      </div>
+
+      <!-- MASTER DATA MANAGEMENT -->
+      <div id="page-master" class="page">
+        <div class="page-header"><div class="page-title">⚙️ 分類 / 單位 / 供應商 管理</div><div class="page-sub">請先在此設定分類與單位，再新增品項</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+          <!-- 分類 -->
+          <div class="card">
+            <div class="card-title">📂 分類管理</div>
+            <div style="display:flex;gap:7px;margin-bottom:10px;">
+              <input type="text" id="new-cat" placeholder="新增分類名稱" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('categories','new-cat','cat-list')">新增</button>
+            </div>
+            <div id="cat-list" style="display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;"></div>
+          </div>
+          <!-- 單位 -->
+          <div class="card">
+            <div class="card-title">📏 單位管理</div>
+            <div style="display:flex;gap:7px;margin-bottom:10px;">
+              <input type="text" id="new-unit" placeholder="新增單位（例：KG）" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('units','new-unit','unit-list')">新增</button>
+            </div>
+            <div id="unit-list" style="display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;"></div>
+          </div>
+          <!-- 供應商 -->
+          <div class="card">
+            <div class="card-title">🏭 供應商管理</div>
+            <div style="display:flex;gap:7px;margin-bottom:10px;">
+              <input type="text" id="new-sup" placeholder="新增供應商名稱" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('suppliers','new-sup','sup-list')">新增</button>
+            </div>
+            <div id="sup-list" style="display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS — 全新版面 -->
       <div id="page-products" class="page">
-        <div class="page-header"><div class="page-title">🗂 物料管理</div><div class="page-sub">含稅進價（成本）僅總部可見</div></div>
-        <div class="grid-2" style="align-items:start;">
-          <div class="card">
-            <div class="card-title" id="prod-form-title">新增品項</div>
-            <div style="display:flex;flex-direction:column;gap:9px;">
-              <div class="form-grid">
-                <div class="field"><label>品號</label><input type="text" id="p-code" placeholder="例：343"></div>
-                <div class="field"><label>品名</label><input type="text" id="p-name" placeholder="品名"></div>
-                <div class="field"><label>規格</label><input type="text" id="p-spec" placeholder="例：50包/箱"></div>
-                <div class="field"><label>庫存單位</label>
-                  <select id="p-unit"><option>BOX</option><option>PKT</option><option>CAN</option><option>BOT</option><option>PKG</option><option>BBL</option><option>SET</option><option>PCS</option><option>PIECES</option></select>
-                </div>
-                <div class="field"><label>🔒 含稅進價（成本，門市不可見）</label><input type="number" id="p-cost" placeholder="0"></div>
-                <div class="field"><label>含稅售價</label><input type="number" id="p-price" placeholder="0"></div>
-                <div class="field"><label>分類</label><input type="text" id="p-cat" placeholder="例：茶葉類"></div>
-                <div class="field"><label>供應商</label><input type="text" id="p-supplier" placeholder="供應商"></div>
-                <div class="field"><label>庫存數量</label><input type="number" id="p-stock" placeholder="0"></div>
-                <div class="field"><label>低庫存警示值</label><input type="number" id="p-swarn" placeholder="5"></div>
-              </div>
-              <div class="field form-full"><label>備註說明</label><textarea id="p-note" placeholder="保存方式、免運條件等..."></textarea></div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-primary" onclick="saveProd()">儲存品項</button>
-                <button class="btn btn-outline" onclick="resetProdForm()">清除</button>
-              </div>
+        <div class="page-header"><div class="page-title">🗂 物料管理</div>
+          <div class="page-sub" id="prod-page-sub"></div>
+        </div>
+        <!-- 上半：新增/編輯表單（獨立一列，寬版） -->
+        <div class="card" style="margin-bottom:1rem;" id="prod-form-card">
+          <div class="card-title" id="prod-form-title">新增品項</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+            <div class="field"><label>品號</label><input type="text" id="p-code" placeholder="例：343"></div>
+            <div class="field"><label>品名</label><input type="text" id="p-name" placeholder="品名"></div>
+            <div class="field"><label>規格</label><input type="text" id="p-spec" placeholder="例：50包/箱"></div>
+            <div class="field"><label>分類</label>
+              <select id="p-cat"><option value="">— 選擇分類 —</option></select>
+            </div>
+            <div class="field"><label>單位</label>
+              <select id="p-unit"><option value="">— 選擇單位 —</option></select>
+            </div>
+            <div class="field"><label>供應商</label>
+              <select id="p-supplier"><option value="">— 選擇供應商 —</option></select>
+            </div>
+            <div class="field"><label>配送方式</label>
+              <select id="p-delivery"><option>總部配送</option><option>廠商直送</option></select>
+            </div>
+            <div class="field"><label>付款方式</label>
+              <select id="p-payment"><option>總部月結</option><option>門市現金自付</option></select>
+            </div>
+            <div class="field" id="p-cost-field"><label>🔒 含稅進價（成本）</label><input type="number" id="p-cost" placeholder="0"></div>
+            <div class="field"><label>含稅售價</label><input type="number" id="p-price" placeholder="0"></div>
+            <div class="field"><label>庫存數量</label><input type="number" id="p-stock" placeholder="0"></div>
+            <div class="field"><label>低庫存警示值</label><input type="number" id="p-swarn" placeholder="5"></div>
+            <div class="field"><label>狀態</label>
+              <select id="p-pstatus">
+                <option value="active">✅ 上架販售</option>
+                <option value="outofstock">⏸ 暫時缺貨</option>
+                <option value="inactive">🚫 下架</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column:2/-1;"><label>備註說明</label><input type="text" id="p-note" placeholder="保存方式、免運條件等..."></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn btn-primary" onclick="saveProd()">儲存品項</button>
+            <button class="btn btn-outline" onclick="resetProdForm()">清除</button>
+          </div>
+        </div>
+        <!-- 下半：品項列表（全寬，可橫向滑動） -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div class="card-title" style="margin:0;">品項列表</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;">
+              <select id="p-filter-cat" onchange="renderProdList()" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;">
+                <option value="">全部分類</option>
+              </select>
+              <select id="p-filter-sup" onchange="renderProdList()" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;">
+                <option value="">全部供應商</option>
+              </select>
+              <select id="p-filter-status" onchange="renderProdList()" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;">
+                <option value="">全部狀態</option>
+                <option value="active">上架</option>
+                <option value="outofstock">缺貨</option>
+                <option value="inactive">下架</option>
+              </select>
+              <input type="text" id="p-search" placeholder="搜尋品名/品號" oninput="renderProdList()" style="width:150px;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12.5px;font-family:inherit;outline:none;">
             </div>
           </div>
-          <div class="card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
-              <div class="card-title" style="margin:0;">品項列表</div>
-              <input type="text" id="p-search" placeholder="搜尋品名/品號" oninput="renderProdList()" style="width:160px;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;font-family:inherit;outline:none;">
-            </div>
-            <div class="table-wrap" id="prod-list"></div>
-          </div>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="prod-list"></div>
         </div>
       </div>
 
@@ -344,7 +425,10 @@ table tr:hover td{background:#f8fafd;}
       <!-- USERS -->
       <div id="page-users" class="page">
         <div class="page-header"><div class="page-title">👥 帳號管理</div><div class="page-sub">總部可查看所有帳號密碼，預設密碼 8888</div></div>
-        <div class="actions-row"><button class="btn btn-primary" onclick="openUserModal()">＋ 新增帳號</button></div>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="openUserModal()">＋ 新增帳號</button>
+          <button class="btn btn-outline" onclick="exportHTML()" title="將目前所有資料（訂單、帳號、品項）打包進HTML，下載備份">💾 匯出 HTML 備份檔</button>
+        </div>
         <div class="card table-wrap" id="users-wrap"></div>
       </div>
 
@@ -435,87 +519,99 @@ let S = {
   _editOrderId: null,
   _cartItems: [],
   _mobCat: '',
+  // ── 三級權限 ──
+  // role: 'owner'=權限1(最高), 'manager'=權限2(總部管理,看不到成本), 'store'=權限3(門市)
   users: [
-    {id:'HQ',no:'00',username:'HQ_admin',password:'admin2024',role:'hq',sname:'總部管理',email:'',phone:'',pwAt:Date.now()},
-    {id:'S01',no:'01',username:'S01',password:'8888',role:'store',sname:'新埔中正店',email:'',phone:'',pwAt:Date.now()-((_3M)+5000)},
-    {id:'S02',no:'02',username:'S02',password:'8888',role:'store',sname:'竹北光明店',email:'',phone:'',pwAt:Date.now()},
-    {id:'S03',no:'03',username:'S03',password:'8888',role:'store',sname:'竹北勝利店',email:'',phone:'',pwAt:Date.now()},
-    {id:'S04',no:'04',username:'S04',password:'8888',role:'store',sname:'竹北嘉興店',email:'',phone:'',pwAt:Date.now()},
-    {id:'S05',no:'05',username:'S05',password:'8888',role:'store',sname:'竹東長春店',email:'',phone:'',pwAt:Date.now()},
-    {id:'S06',no:'06',username:'S06',password:'8888',role:'store',sname:'新竹新莊店',email:'',phone:'',pwAt:Date.now()},
+    {id:'HQ',   no:'00',username:'HQ_admin', password:'admin2024',role:'owner',  sname:'總部管理', email:'',phone:'',pwAt:Date.now()},
+    {id:'S01',  no:'01',username:'S01',       password:'8888',     role:'store',  sname:'新埔中正店',email:'',phone:'',pwAt:Date.now()-((_3M)+5000)},
+    {id:'S02',  no:'02',username:'S02',       password:'8888',     role:'store',  sname:'竹北光明店',email:'',phone:'',pwAt:Date.now()},
+    {id:'S03',  no:'03',username:'S03',       password:'8888',     role:'store',  sname:'竹北勝利店',email:'',phone:'',pwAt:Date.now()},
+    {id:'S04',  no:'04',username:'S04',       password:'8888',     role:'store',  sname:'竹北嘉興店',email:'',phone:'',pwAt:Date.now()},
+    {id:'S05',  no:'05',username:'S05',       password:'8888',     role:'store',  sname:'竹東長春店',email:'',phone:'',pwAt:Date.now()},
+    {id:'S06',  no:'06',username:'S06',       password:'8888',     role:'store',  sname:'新竹新莊店',email:'',phone:'',pwAt:Date.now()},
   ],
+  // ── 分類主檔 ──
+  categories: ['茶葉類','粉類','食材','糖漿','果汁類','杯袋','耗材','乳製品','辦公耗材','清潔用品','制服','設備','印刷品','優惠方案'],
+  // ── 單位主檔 ──
+  units: ['BOX','PKT','CAN','BOT','PKG','BBL','SET','PCS','PIECES','KG','L'],
+  // ── 配送方式主檔 ──
+  deliveryTypes: ['總部配送','廠商直送'],
+  // ── 付款方式主檔 ──
+  paymentTypes: ['總部月結','門市現金自付'],
+  // ── 供應商主檔 ──
+  suppliers: ['華山','翠豐','大甲','相思食品行','合勝發','吉麗','恩連','好樂洗','利洲','品元','丞儲國際','鉦旺樂','李碩祺','思茶總部','瑞興','現金'],
   products: [
-    {id:'343',code:'343',name:'思茶-醇厚茶葉/箱(1.5版)',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3177,price:6773,stock:20,swarn:5,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'344',code:'344',name:'思茶-淡雅紅茶/箱1.5版',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2888,price:5670,stock:15,swarn:5,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'345',code:'345',name:'思茶-朝露綠茶/箱',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3413,price:5775,stock:18,swarn:5,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'346',code:'346',name:'思茶-文山清茶/箱',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:5093,price:6458,stock:10,swarn:3,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'347',code:'347',name:'思茶-鐵韻烏龍/箱 1.5版',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2636,price:4410,stock:12,swarn:4,note:''},
-    {id:'348',code:'348',name:'思茶-朝露綠茶1.5版',spec:'每箱50包',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3413,price:5775,stock:8,swarn:4,note:''},
-    {id:'351',code:'351',name:'奶茶粉/袋',spec:'(25kg/箱)',cat:'粉類',supplier:'翠豐',unit:'PKT',cost:2499,price:3150,stock:20,swarn:5,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'352',code:'352',name:'芋頭/箱',spec:'8包/箱',cat:'食材',supplier:'大甲',unit:'BOX',cost:3400,price:3400,stock:6,swarn:2,note:''},
-    {id:'355',code:'355',name:'山水蜂蜜/罐 黃蓋',spec:'3公斤/罐',cat:'糖漿',supplier:'相思食品行',unit:'CAN',cost:168,price:168,stock:30,swarn:8,note:''},
-    {id:'356',code:'356',name:'冬瓜塊/袋',spec:'10包/袋',cat:'食材',supplier:'相思食品行',unit:'PKG',cost:368,price:368,stock:25,swarn:5,note:''},
-    {id:'357',code:'357',name:'仙草汁/罐',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:143,price:143,stock:40,swarn:10,note:''},
-    {id:'358',code:'358',name:'旺旺原味椰果3.7kg',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:201,price:201,stock:20,swarn:5,note:''},
-    {id:'359',code:'359',name:'紅豆罐/罐',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:210,price:210,stock:15,swarn:4,note:''},
-    {id:'362',code:'362',name:'台糖液糖/桶',spec:'25kg/桶',cat:'糖漿',supplier:'相思食品行',unit:'BBL',cost:831,price:831,stock:12,swarn:3,note:''},
-    {id:'364',code:'364',name:'勾芡粉/包',spec:'',cat:'粉類',supplier:'相思食品行',unit:'PKG',cost:21,price:21,stock:50,swarn:10,note:''},
-    {id:'365',code:'365',name:'台糖白砂/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:746,price:746,stock:15,swarn:4,note:''},
-    {id:'368',code:'368',name:'思茶訂製-2杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,note:''},
-    {id:'369',code:'369',name:'思茶訂製-4杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,note:''},
-    {id:'370',code:'370',name:'思茶訂製-6杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,note:''},
-    {id:'371',code:'371',name:'四杯架/箱',spec:'(1000pcs/箱)',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1365,price:1418,stock:8,swarn:2,note:''},
-    {id:'372',code:'372',name:'六杯架/箱',spec:'(1000pcs/箱)',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1890,price:1901,stock:8,swarn:2,note:''},
-    {id:'373',code:'373',name:'思茶訂製-吸管(中)/箱',spec:'2袋/箱',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1071,price:1229,stock:20,swarn:5,note:''},
-    {id:'374',code:'374',name:'思茶訂製-吸管(大)/箱',spec:'2袋/箱',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1071,price:1229,stock:20,swarn:5,note:''},
-    {id:'375',code:'375',name:'紅甘蔗原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:79,price:79,stock:30,swarn:8,note:''},
-    {id:'376',code:'376',name:'冷凍檸檬原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:126,price:126,stock:25,swarn:6,note:''},
-    {id:'377',code:'377',name:'冷凍百香果原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:158,price:158,stock:20,swarn:5,note:''},
-    {id:'378',code:'378',name:'柳橙原汁(4-11月)/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:126,price:126,stock:15,swarn:4,note:''},
-    {id:'379',code:'379',name:'白柚原汁(9-11月)/罐',spec:'二紅冷凍葡萄柚汁',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:105,price:105,stock:10,swarn:3,note:''},
-    {id:'380',code:'380',name:'pos機用-感熱紙/箱',spec:'(60捲/箱)',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:2835,price:3360,stock:5,swarn:2,note:''},
-    {id:'381',code:'381',name:'pos機用貼紙/箱',spec:'(100捲/箱)',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:5775,price:6510,stock:3,swarn:1,note:''},
-    {id:'382',code:'382',name:'清潔酵素粉/箱',spec:'2桶/箱',cat:'清潔用品',supplier:'好樂洗',unit:'BOX',cost:1000,price:1000,stock:8,swarn:2,note:''},
-    {id:'383',code:'383',name:'思茶訂製-700紙杯/箱',spec:'1000入/箱',cat:'杯袋',supplier:'合勝發',unit:'BOX',cost:1418,price:2625,stock:15,swarn:4,note:''},
-    {id:'384',code:'384',name:'思茶訂製-500紙杯/箱',spec:'1000入/箱',cat:'杯袋',supplier:'合勝發',unit:'BOX',cost:1260,price:2520,stock:15,swarn:4,note:''},
-    {id:'388',code:'388',name:'思茶訂製-封口膜/箱',spec:'6捲/箱',cat:'耗材',supplier:'思茶總部',unit:'BOX',cost:2898,price:5513,stock:10,swarn:3,note:''},
-    {id:'391',code:'391',name:'中藥材(竹薑用)/包',spec:'',cat:'食材',supplier:'現金',unit:'PKG',cost:74,price:210,stock:20,swarn:5,note:''},
-    {id:'394',code:'394',name:'思茶訂製700紙杯(節慶版)鳳梨/箱',spec:'1000只/箱',cat:'杯袋',supplier:'瑞興',unit:'BOX',cost:1680,price:2625,stock:5,swarn:2,note:''},
-    {id:'395',code:'395',name:'桂花釀/箱',spec:'4瓶/箱',cat:'食材',supplier:'丞儲國際',unit:'BOX',cost:1370,price:1650,stock:6,swarn:2,note:''},
-    {id:'398',code:'398',name:'思茶制服(S)/件',spec:'',cat:'制服',supplier:'現金',unit:'PIECES',cost:368,price:840,stock:10,swarn:2,note:''},
-    {id:'399',code:'399',name:'思茶圍裙(無尺寸)/件',spec:'',cat:'制服',supplier:'現金',unit:'PIECES',cost:630,price:630,stock:8,swarn:2,note:''},
-    {id:'402',code:'402',name:'思茶制服(M)/件',spec:'',cat:'制服',supplier:'現金',unit:'PCS',cost:368,price:840,stock:10,swarn:2,note:''},
-    {id:'403',code:'403',name:'思茶制服(L)/件',spec:'',cat:'制服',supplier:'現金',unit:'PCS',cost:368,price:840,stock:10,swarn:2,note:''},
-    {id:'425',code:'425',name:'思茶QQ粉條/箱',spec:'(6包/箱)',cat:'食材',supplier:'利洲',unit:'BOX',cost:1071,price:1607,stock:12,swarn:3,note:'兩箱免運費,一箱須收取運費160.'},
-    {id:'426',code:'426',name:'寶山黑砂糖/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:555,price:555,stock:15,swarn:4,note:''},
-    {id:'427',code:'427',name:'麥子/件',spec:'(20包/件)',cat:'食材',supplier:'現金',unit:'SET',cost:957,price:1890,stock:6,swarn:2,note:''},
-    {id:'442',code:'442',name:'台糖冰糖/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:1533,price:1680,stock:10,swarn:3,note:''},
-    {id:'443',code:'443',name:'台糖特砂/箱 1kg/包',spec:'台糖精製細砂',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:746,price:820,stock:12,swarn:3,note:''},
-    {id:'444',code:'444',name:'鳳梨果肉/包',spec:'1斤/包',cat:'果汁類',supplier:'吉麗',unit:'PKG',cost:126,price:126,stock:20,swarn:5,note:''},
-    {id:'445',code:'445',name:'鳳梨原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:105,price:105,stock:18,swarn:4,note:''},
-    {id:'457',code:'457',name:'二砂糖(25KG/袋)',spec:'',cat:'糖漿',supplier:'相思食品行',unit:'PKT',cost:977,price:977,stock:10,swarn:3,note:''},
-    {id:'502',code:'502',name:'思茶-山韻不知春茶/箱',spec:'(30包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2568,price:4725,stock:8,swarn:2,note:''},
-    {id:'511',code:'511',name:'台農鮮奶/罐',spec:'',cat:'乳製品',supplier:'現金',unit:'CAN',cost:1400,price:1400,stock:5,swarn:2,note:''},
-    {id:'512',code:'512',name:'養樂多/罐',spec:'40瓶/包',cat:'乳製品',supplier:'現金',unit:'BOT',cost:0,price:0,stock:0,swarn:2,note:''},
-    {id:'518',code:'518',name:'老欉文旦/箱',spec:'(20台斤/箱)含運',cat:'果汁類',supplier:'李碩祺',unit:'BOX',cost:460,price:620,stock:4,swarn:1,note:''},
-    {id:'532',code:'532',name:'思茶果凍粉/包',spec:'1公斤/包(20包/箱)',cat:'粉類',supplier:'思茶總部',unit:'PKG',cost:336,price:483,stock:30,swarn:6,note:''},
-    {id:'536',code:'536',name:'冷凍水蜜桃漿(含果肉)/罐',spec:'1.1kg/瓶',cat:'果汁類',supplier:'鉦旺樂',unit:'BOT',cost:230,price:230,stock:15,swarn:4,note:''},
-    {id:'612',code:'612',name:'梅子',spec:'',cat:'食材',supplier:'思茶總部',unit:'PKG',cost:126,price:189,stock:20,swarn:5,note:''},
-    {id:'639',code:'639',name:'原物料優惠',spec:'',cat:'優惠方案',supplier:'',unit:'SET',cost:21000,price:21000,stock:99,swarn:0,note:''},
-    {id:'652',code:'652',name:'低糖擂茶',spec:'10斤/包',cat:'茶葉類',supplier:'思茶總部',unit:'PKG',cost:2048,price:2646,stock:8,swarn:2,note:''},
-    {id:'653',code:'653',name:'無糖擂茶',spec:'10斤/包',cat:'茶葉類',supplier:'思茶總部',unit:'PKG',cost:2258,price:2867,stock:8,swarn:2,note:''},
-    {id:'654',code:'654',name:'特調粉粿粉',spec:'1kg/包(20包/箱)',cat:'粉類',supplier:'品元',unit:'PKG',cost:273,price:336,stock:25,swarn:5,note:''},
-    {id:'656',code:'656',name:'電子發票/箱',spec:'60捲/箱',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:3465,price:4095,stock:4,swarn:1,note:''},
-    {id:'657',code:'657',name:'發票機',spec:'',cat:'設備',supplier:'恩連',unit:'PCS',cost:8925,price:10000,stock:2,swarn:1,note:''},
-    {id:'658',code:'658',name:'5P交換器',spec:'',cat:'設備',supplier:'恩連',unit:'PCS',cost:420,price:525,stock:3,swarn:1,note:''},
-    {id:'659',code:'659',name:'So Good燕麥奶',spec:'1公升/瓶(12瓶/箱)',cat:'乳製品',supplier:'思茶總部',unit:'BOT',cost:115,price:131,stock:24,swarn:6,note:''},
-    {id:'660',code:'660',name:'濾心#4',spec:'礦物質濾心',cat:'設備',supplier:'思茶總部',unit:'PCS',cost:483,price:945,stock:5,swarn:2,note:''},
-    {id:'672',code:'672',name:'西瓜原汁',spec:'950ml/瓶',cat:'果汁類',supplier:'鉦旺樂',unit:'BOT',cost:85,price:95,stock:20,swarn:5,note:'與536一起叫貨,20瓶免運'},
-    {id:'673',code:'673',name:'思茶-仙境果韻紅茶(茶包)',spec:'(6袋*50)/箱,(50入/袋)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:1575,price:2363,stock:10,swarn:3,note:''},
-    {id:'674',code:'674',name:'(西瓜汁*10+水蜜桃*5)組合',spec:'需另加運費50',cat:'果汁類',supplier:'鉦旺樂',unit:'SET',cost:2258,price:2258,stock:5,swarn:1,note:''},
-    {id:'675',code:'675',name:'西瓜汁*15+水蜜桃*5(套組)',spec:'免運',cat:'果汁類',supplier:'鉦旺樂',unit:'SET',cost:2704,price:2704,stock:5,swarn:1,note:''},
-    {id:'676',code:'676',name:'特調蘋果果露-2.1kg/罐',spec:'2.1kg/罐,6罐/箱',cat:'食材',supplier:'思茶總部',unit:'BOX',cost:1667,price:2100,stock:8,swarn:2,note:'每次叫貨1箱'},
-    {id:'682',code:'682',name:'2026菜單',spec:'202604月(500份/set)',cat:'印刷品',supplier:'思茶總部',unit:'SET',cost:788,price:1313,stock:10,swarn:2,note:''},
+    {id:'343',code:'343',name:'思茶-醇厚茶葉/箱(1.5版)',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3177,price:6773,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'344',code:'344',name:'思茶-淡雅紅茶/箱1.5版',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2888,price:5670,stock:15,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'345',code:'345',name:'思茶-朝露綠茶/箱',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3413,price:5775,stock:18,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'346',code:'346',name:'思茶-文山清茶/箱',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:5093,price:6458,stock:10,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'347',code:'347',name:'思茶-鐵韻烏龍/箱 1.5版',spec:'(50包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2636,price:4410,stock:12,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'348',code:'348',name:'思茶-朝露綠茶1.5版',spec:'每箱50包',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:3413,price:5775,stock:8,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'351',code:'351',name:'奶茶粉/袋',spec:'(25kg/箱)',cat:'粉類',supplier:'翠豐',unit:'PKT',cost:2499,price:3150,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'352',code:'352',name:'芋頭/箱',spec:'8包/箱',cat:'食材',supplier:'大甲',unit:'BOX',cost:3400,price:3400,stock:6,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'355',code:'355',name:'山水蜂蜜/罐 黃蓋',spec:'3公斤/罐',cat:'糖漿',supplier:'相思食品行',unit:'CAN',cost:168,price:168,stock:30,swarn:8,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'356',code:'356',name:'冬瓜塊/袋',spec:'10包/袋',cat:'食材',supplier:'相思食品行',unit:'PKG',cost:368,price:368,stock:25,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'357',code:'357',name:'仙草汁/罐',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:143,price:143,stock:40,swarn:10,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'358',code:'358',name:'旺旺原味椰果3.7kg',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:201,price:201,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'359',code:'359',name:'紅豆罐/罐',spec:'',cat:'食材',supplier:'相思食品行',unit:'CAN',cost:210,price:210,stock:15,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'362',code:'362',name:'台糖液糖/桶',spec:'25kg/桶',cat:'糖漿',supplier:'相思食品行',unit:'BBL',cost:831,price:831,stock:12,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'364',code:'364',name:'勾芡粉/包',spec:'',cat:'粉類',supplier:'相思食品行',unit:'PKG',cost:21,price:21,stock:50,swarn:10,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'365',code:'365',name:'台糖白砂/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:746,price:746,stock:15,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'368',code:'368',name:'思茶訂製-2杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'369',code:'369',name:'思茶訂製-4杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'370',code:'370',name:'思茶訂製-6杯袋/件',spec:'25kg/件',cat:'杯袋',supplier:'合勝發',unit:'PKT',cost:2415,price:2798,stock:10,swarn:3,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'371',code:'371',name:'四杯架/箱',spec:'(1000pcs/箱)',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1365,price:1418,stock:8,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'372',code:'372',name:'六杯架/箱',spec:'(1000pcs/箱)',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1890,price:1901,stock:8,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'373',code:'373',name:'思茶訂製-吸管(中)/箱',spec:'2袋/箱',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1071,price:1229,stock:20,swarn:5,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'374',code:'374',name:'思茶訂製-吸管(大)/箱',spec:'2袋/箱',cat:'耗材',supplier:'合勝發',unit:'BOX',cost:1071,price:1229,stock:20,swarn:5,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'375',code:'375',name:'紅甘蔗原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:79,price:79,stock:30,swarn:8,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'376',code:'376',name:'冷凍檸檬原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:126,price:126,stock:25,swarn:6,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'377',code:'377',name:'冷凍百香果原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:158,price:158,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'378',code:'378',name:'柳橙原汁(4-11月)/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:126,price:126,stock:15,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'379',code:'379',name:'白柚原汁(9-11月)/罐',spec:'二紅冷凍葡萄柚汁',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:105,price:105,stock:10,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'380',code:'380',name:'pos機用-感熱紙/箱',spec:'(60捲/箱)',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:2835,price:3360,stock:5,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'381',code:'381',name:'pos機用貼紙/箱',spec:'(100捲/箱)',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:5775,price:6510,stock:3,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'382',code:'382',name:'清潔酵素粉/箱',spec:'2桶/箱',cat:'清潔用品',supplier:'好樂洗',unit:'BOX',cost:1000,price:1000,stock:8,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'門市現金自付',note:''},
+    {id:'383',code:'383',name:'思茶訂製-700紙杯/箱',spec:'1000入/箱',cat:'杯袋',supplier:'合勝發',unit:'BOX',cost:1418,price:2625,stock:15,swarn:4,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'384',code:'384',name:'思茶訂製-500紙杯/箱',spec:'1000入/箱',cat:'杯袋',supplier:'合勝發',unit:'BOX',cost:1260,price:2520,stock:15,swarn:4,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'388',code:'388',name:'思茶訂製-封口膜/箱',spec:'6捲/箱',cat:'耗材',supplier:'思茶總部',unit:'BOX',cost:2898,price:5513,stock:10,swarn:3,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'391',code:'391',name:'中藥材(竹薑用)/包',spec:'',cat:'食材',supplier:'現金',unit:'PKG',cost:74,price:210,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'門市現金自付',note:''},
+    {id:'394',code:'394',name:'思茶訂製700紙杯(節慶版)鳳梨/箱',spec:'1000只/箱',cat:'杯袋',supplier:'瑞興',unit:'BOX',cost:1680,price:2625,stock:5,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'395',code:'395',name:'桂花釀/箱',spec:'4瓶/箱',cat:'食材',supplier:'丞儲國際',unit:'BOX',cost:1370,price:1650,stock:6,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'398',code:'398',name:'思茶制服(S)/件',spec:'',cat:'制服',supplier:'現金',unit:'PIECES',cost:368,price:840,stock:10,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'399',code:'399',name:'思茶圍裙(無尺寸)/件',spec:'',cat:'制服',supplier:'現金',unit:'PIECES',cost:630,price:630,stock:8,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'402',code:'402',name:'思茶制服(M)/件',spec:'',cat:'制服',supplier:'現金',unit:'PCS',cost:368,price:840,stock:10,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'403',code:'403',name:'思茶制服(L)/件',spec:'',cat:'制服',supplier:'現金',unit:'PCS',cost:368,price:840,stock:10,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'425',code:'425',name:'思茶QQ粉條/箱',spec:'(6包/箱)',cat:'食材',supplier:'利洲',unit:'BOX',cost:1071,price:1607,stock:12,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'兩箱免運費,一箱須收取運費160.'},
+    {id:'426',code:'426',name:'寶山黑砂糖/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:555,price:555,stock:15,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'427',code:'427',name:'麥子/件',spec:'(20包/件)',cat:'食材',supplier:'現金',unit:'SET',cost:957,price:1890,stock:6,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'門市現金自付',note:''},
+    {id:'442',code:'442',name:'台糖冰糖/箱',spec:'20包/箱',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:1533,price:1680,stock:10,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'443',code:'443',name:'台糖特砂/箱 1kg/包',spec:'台糖精製細砂',cat:'糖漿',supplier:'相思食品行',unit:'BOX',cost:746,price:820,stock:12,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'444',code:'444',name:'鳳梨果肉/包',spec:'1斤/包',cat:'果汁類',supplier:'吉麗',unit:'PKG',cost:126,price:126,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'445',code:'445',name:'鳳梨原汁/罐',spec:'',cat:'果汁類',supplier:'吉麗',unit:'CAN',cost:105,price:105,stock:18,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'457',code:'457',name:'二砂糖(25KG/袋)',spec:'',cat:'糖漿',supplier:'相思食品行',unit:'PKT',cost:977,price:977,stock:10,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'502',code:'502',name:'思茶-山韻不知春茶/箱',spec:'(30包/箱)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:2568,price:4725,stock:8,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'511',code:'511',name:'台農鮮奶/罐',spec:'',cat:'乳製品',supplier:'現金',unit:'CAN',cost:1400,price:1400,stock:5,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'門市現金自付',note:''},
+    {id:'512',code:'512',name:'養樂多/罐',spec:'40瓶/包',cat:'乳製品',supplier:'現金',unit:'BOT',cost:0,price:0,stock:0,swarn:2,pstatus:'active',deliveryType:'廠商直送',paymentType:'門市現金自付',note:''},
+    {id:'518',code:'518',name:'老欉文旦/箱',spec:'(20台斤/箱)含運',cat:'果汁類',supplier:'李碩祺',unit:'BOX',cost:460,price:620,stock:4,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'532',code:'532',name:'思茶果凍粉/包',spec:'1公斤/包(20包/箱)',cat:'粉類',supplier:'思茶總部',unit:'PKG',cost:336,price:483,stock:30,swarn:6,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'536',code:'536',name:'冷凍水蜜桃漿(含果肉)/罐',spec:'1.1kg/瓶',cat:'果汁類',supplier:'鉦旺樂',unit:'BOT',cost:230,price:230,stock:15,swarn:4,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'612',code:'612',name:'梅子',spec:'',cat:'食材',supplier:'思茶總部',unit:'PKG',cost:126,price:189,stock:20,swarn:5,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'639',code:'639',name:'原物料優惠',spec:'',cat:'優惠方案',supplier:'',unit:'SET',cost:21000,price:21000,stock:99,swarn:0,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'652',code:'652',name:'低糖擂茶',spec:'10斤/包',cat:'茶葉類',supplier:'思茶總部',unit:'PKG',cost:2048,price:2646,stock:8,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'653',code:'653',name:'無糖擂茶',spec:'10斤/包',cat:'茶葉類',supplier:'思茶總部',unit:'PKG',cost:2258,price:2867,stock:8,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'654',code:'654',name:'特調粉粿粉',spec:'1kg/包(20包/箱)',cat:'粉類',supplier:'品元',unit:'PKG',cost:273,price:336,stock:25,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'656',code:'656',name:'電子發票/箱',spec:'60捲/箱',cat:'辦公耗材',supplier:'恩連',unit:'BOX',cost:3465,price:4095,stock:4,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'657',code:'657',name:'發票機',spec:'',cat:'設備',supplier:'恩連',unit:'PCS',cost:8925,price:10000,stock:2,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'658',code:'658',name:'5P交換器',spec:'',cat:'設備',supplier:'恩連',unit:'PCS',cost:420,price:525,stock:3,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'659',code:'659',name:'So Good燕麥奶',spec:'1公升/瓶(12瓶/箱)',cat:'乳製品',supplier:'思茶總部',unit:'BOT',cost:115,price:131,stock:24,swarn:6,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'660',code:'660',name:'濾心#4',spec:'礦物質濾心',cat:'設備',supplier:'思茶總部',unit:'PCS',cost:483,price:945,stock:5,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
+    {id:'672',code:'672',name:'西瓜原汁',spec:'950ml/瓶',cat:'果汁類',supplier:'鉦旺樂',unit:'BOT',cost:85,price:95,stock:20,swarn:5,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:'與536一起叫貨,20瓶免運'},
+    {id:'673',code:'673',name:'思茶-仙境果韻紅茶(茶包)',spec:'(6袋*50)/箱,(50入/袋)',cat:'茶葉類',supplier:'華山',unit:'BOX',cost:1575,price:2363,stock:10,swarn:3,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'674',code:'674',name:'(西瓜汁*10+水蜜桃*5)組合',spec:'需另加運費50',cat:'果汁類',supplier:'鉦旺樂',unit:'SET',cost:2258,price:2258,stock:5,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'675',code:'675',name:'西瓜汁*15+水蜜桃*5(套組)',spec:'免運',cat:'果汁類',supplier:'鉦旺樂',unit:'SET',cost:2704,price:2704,stock:5,swarn:1,pstatus:'active',deliveryType:'廠商直送',paymentType:'總部月結',note:''},
+    {id:'676',code:'676',name:'特調蘋果果露-2.1kg/罐',spec:'2.1kg/罐,6罐/箱',cat:'食材',supplier:'思茶總部',unit:'BOX',cost:1667,price:2100,stock:8,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:'每次叫貨1箱'},
+    {id:'682',code:'682',name:'2026菜單',spec:'202604月(500份/set)',cat:'印刷品',supplier:'思茶總部',unit:'SET',cost:788,price:1313,stock:10,swarn:2,pstatus:'active',deliveryType:'總部配送',paymentType:'總部月結',note:''},
   ],
   orders: [],
   notifs: [],
@@ -537,23 +633,30 @@ function lsSave(){
 
 function lsLoad(){
   try{
-    // 帳號：若已有存檔則用存檔（保留密碼異動），否則用預設
     const su=localStorage.getItem(LS_KEYS.users);
     if(su){
       const saved=JSON.parse(su);
-      // 若預設清單有新增帳號，合併進去
-      S.users.forEach(def=>{
-        if(!saved.find(u=>u.id===def.id)) saved.push(def);
-      });
+      S.users.forEach(def=>{if(!saved.find(u=>u.id===def.id)) saved.push(def);});
       S.users=saved;
-    } else {
-      lsSave(); // 首次：把預設資料寫入
-    }
+    } else { lsSave(); }
     const so=localStorage.getItem(LS_KEYS.orders);
     if(so) S.orders=JSON.parse(so);
     const sn=localStorage.getItem(LS_KEYS.notifs);
     if(sn) S.notifs=JSON.parse(sn);
+    // 主檔持久化
+    const sc=localStorage.getItem('derp_cats');     if(sc) S.categories=JSON.parse(sc);
+    const sun=localStorage.getItem('derp_units');    if(sun) S.units=JSON.parse(sun);
+    const ss=localStorage.getItem('derp_suppliers'); if(ss) S.suppliers=JSON.parse(ss);
+    const sp=localStorage.getItem('derp_products');  if(sp) S.products=JSON.parse(sp);
   }catch(e){ console.warn('localStorage read error',e); }
+}
+function saveMaster(){
+  try{
+    localStorage.setItem('derp_cats',     JSON.stringify(S.categories));
+    localStorage.setItem('derp_units',    JSON.stringify(S.units));
+    localStorage.setItem('derp_suppliers',JSON.stringify(S.suppliers));
+    localStorage.setItem('derp_products', JSON.stringify(S.products));
+  }catch(e){}
 }
 
 function lsSessionSave(userId){
@@ -566,12 +669,21 @@ function lsSessionClear(){
   try{ localStorage.removeItem(LS_KEYS.session); }catch(e){}
 }
 
-// 每次資料變動後呼叫，確保跨分頁/重整都能同步
-function saveAll(){ lsSave(); }
+function saveAll(){ lsSave(); saveMaster(); }
 
-// ── AUTH ──
-const isHQ=()=>S.user?.role==='hq';
-const isMob=()=>window.innerWidth<=600;
+// ── 三級權限輔助 ──
+// owner=權限1(最高), manager=權限2(總部管理,看不到成本), store=權限3(門市)
+const isOwner   = ()=>S.user?.role==='owner';
+const isManager = ()=>S.user?.role==='manager';
+const isHQ      = ()=>S.user?.role==='owner'||S.user?.role==='manager'; // 1或2都算總部
+const isStore   = ()=>S.user?.role==='store';
+const canSeeCost= ()=>S.user?.role==='owner'; // 只有權限1能看成本
+const isMob     = ()=>window.innerWidth<=600;
+
+// 權限等級標籤
+const ROLE_LABELS = {owner:'⭐ 權限1 擁有者',manager:'🔑 權限2 管理員',store:'🏪 門市'};
+const ROLE_BADGE  = {owner:'badge-hq',manager:'badge-hq',store:'badge-store'};
+const ROLE_BADGE_TEXT={owner:'總部擁有者',manager:'總部管理員',store:'門市'};
 
 function applyLogin(found){
   S.user=found;
@@ -580,8 +692,8 @@ function applyLogin(found){
   document.getElementById('hd-name').textContent=found.sname||found.username;
   document.getElementById('hd-avatar').textContent=(found.sname||found.username).charAt(0);
   const b=document.getElementById('hd-badge');
-  b.className=found.role==='hq'?'badge-hq':'badge-store';
-  b.textContent=found.role==='hq'?'總部':'門市';
+  b.className=ROLE_BADGE[found.role]||'badge-store';
+  b.textContent=ROLE_BADGE_TEXT[found.role]||'門市';
   lsSessionSave(found.id);
   buildSidebar();
   if(found.role==='store'&&(Date.now()-found.pwAt)>_3M){
@@ -639,17 +751,18 @@ function changePw(){
 
 // ── SIDEBAR ──
 function buildSidebar(){
-  const hq=isHQ();
   let h='';
-  if(hq){
-    h+=`<div class="nav-sec">總部管理</div>`;
+  if(isHQ()){
+    h+=`<div class="nav-sec">總部功能</div>`;
     h+=ni('dashboard','📊','儀表板');
     h+=ni('orders','📦','訂單管理',unreadCnt());
-    h+=`<div class="nav-sec">設定</div>`;
+    h+=ni('order-for-store','🛒','幫門市下單');
+    h+=`<div class="nav-sec">管理設定</div>`;
     h+=ni('products','🗂','物料管理');
+    h+=ni('master','⚙️','分類/單位/供應商');
     h+=ni('accounts','💰','帳款管理');
     h+=ni('stock','📦','庫存管理');
-    h+=ni('users','👥','帳號管理');
+    if(isOwner()) h+=ni('users','👥','帳號管理');
     h+=ni('notifications','🔔','通知中心',unreadCnt());
   }else{
     h+=`<div class="nav-sec">門市功能</div>`;
@@ -676,7 +789,8 @@ function showPage(id){
   document.getElementById('page-'+id)?.classList.add('active');
   document.getElementById('nav-'+id)?.classList.add('active');
   ({dashboard:renderDash,orders:renderOrders,'store-order':renderStoreOrder,'my-orders':renderMyOrders,
-    products:renderProds,accounts:renderAccounts,stock:renderStock,users:renderUsers,notifications:renderNotifs})[id]?.();
+    'order-for-store':renderOrderForStore,
+    products:renderProds,master:renderMaster,accounts:renderAccounts,stock:renderStock,users:renderUsers,notifications:renderNotifs})[id]?.();
 }
 function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
 function closeMenu(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
@@ -928,158 +1042,148 @@ function buildPrint(ords){
   const now=new Date().toLocaleString('zh-TW');
   const pages=ords.map(o=>`
 <div class="page-wrap">
-  <!-- 頁眉 -->
   <div class="doc-header">
-    <div>
-      <div class="doc-title">D訂購系統 — 出貨單</div>
-      <div class="doc-sub">列印時間：${now}</div>
-    </div>
-    <div class="doc-badge">${stMap[o.status]||o.status}</div>
+    <div class="doc-title">D訂購系統 — 出貨單</div>
+    <div class="doc-meta">列印：${now}　狀態：${stMap[o.status]||o.status}</div>
   </div>
-
-  <!-- 訂單基本資訊 -->
   <div class="info-grid">
-    <div class="info-cell"><div class="info-lbl">訂單編號</div><div class="info-val mono">${o.id}</div></div>
+    <div class="info-cell"><div class="info-lbl">訂單編號</div><div class="info-val">${o.id}</div></div>
     <div class="info-cell"><div class="info-lbl">門市名稱</div><div class="info-val">${o.sname}</div></div>
     <div class="info-cell"><div class="info-lbl">訂單日期</div><div class="info-val">${o.date}</div></div>
     <div class="info-cell"><div class="info-lbl">預計到貨日</div><div class="info-val">${o.delivery||'—'}</div></div>
     <div class="info-cell"><div class="info-lbl">確認人員</div><div class="info-val">${o.confirmedBy||'—'}</div></div>
-    <div class="info-cell"><div class="info-lbl">確認時間</div><div class="info-val">${o.confirmedAt||'—'}</div></div>
-    ${o.note?`<div class="info-cell" style="grid-column:1/-1;"><div class="info-lbl">備註</div><div class="info-val">${o.note}</div></div>`:''}
+    <div class="info-cell"><div class="info-lbl">備註</div><div class="info-val">${o.note||'—'}</div></div>
   </div>
-
-  <!-- 貨品核對表 -->
-  <div class="section-title">📦 貨品核對表</div>
   <table class="goods-table">
-    <thead>
-      <tr>
-        <th style="width:28px;">✓</th>
-        <th style="width:60px;">品號</th>
-        <th>品名</th>
-        <th style="width:100px;">規格</th>
-        <th style="width:45px;">單位</th>
-        <th style="width:50px;">訂購量</th>
-        <th style="width:55px;">實收量</th>
-        <th style="width:65px;">售價</th>
-        <th style="width:75px;">小計</th>
-        <th style="width:80px;">備註</th>
-      </tr>
-    </thead>
+    <thead><tr>
+      <th class="col-chk">✓</th>
+      <th class="col-code">品號</th>
+      <th class="col-name">品名／規格</th>
+      <th class="col-unit">單位</th>
+      <th class="col-qty">訂購量</th>
+      <th class="col-rcv">實收量</th>
+      <th class="col-note">備註</th>
+    </tr></thead>
     <tbody>
       ${o.items.map((i,idx)=>`<tr class="${idx%2===1?'row-alt':''}">
-        <td class="chk-cell"><div class="chk-box"></div></td>
-        <td class="mono">${i.code}</td>
-        <td>${i.name}</td>
-        <td class="spec">${i.spec||''}</td>
-        <td class="center">${i.unit}</td>
-        <td class="center bold">${i.qty}</td>
-        <td class="rcv-cell"><div class="rcv-line"></div></td>
-        <td class="right">$${i.price.toLocaleString()}</td>
-        <td class="right bold">$${(i.qty*i.price).toLocaleString()}</td>
-        <td></td>
+        <td class="col-chk"><div class="chk-box"></div></td>
+        <td class="col-code">${i.code}</td>
+        <td class="col-name"><div class="item-name">${i.name}</div>${i.spec?`<div class="item-spec">${i.spec}</div>`:''}</td>
+        <td class="col-unit">${i.unit}</td>
+        <td class="col-qty">${i.qty}</td>
+        <td class="col-rcv"><div class="rcv-line"></div></td>
+        <td class="col-note"></td>
       </tr>`).join('')}
     </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="7" style="text-align:right;font-weight:700;padding:7px 10px;background:#f4f6fa;">合計金額</td>
-        <td colspan="2" style="font-weight:700;font-size:14px;padding:7px 10px;background:#f4f6fa;text-align:right;">$${o.total.toLocaleString()}</td>
-        <td style="background:#f4f6fa;"></td>
-      </tr>
-    </tfoot>
   </table>
-
-  <!-- 簽收欄 -->
-  <div class="sign-section">
-    <div class="sign-title">📝 簽收確認欄</div>
-    <div class="sign-grid">
-      <div class="sign-cell">
-        <div class="sign-lbl">收貨確認</div>
-        <div class="sign-note">□ 全數到齊　□ 數量異常　□ 品質異常</div>
-        <div class="sign-line-area">
-          <div class="sign-row"><span>異常說明：</span><div class="sign-line" style="flex:1;"></div></div>
-          <div class="sign-row"><span>　　　　　</span><div class="sign-line" style="flex:1;"></div></div>
-        </div>
-      </div>
-      <div class="sign-cell">
-        <div class="sign-lbl">收貨人簽名</div>
-        <div class="sign-box"></div>
-        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
-      </div>
-      <div class="sign-cell">
-        <div class="sign-lbl">送貨人簽名</div>
-        <div class="sign-box"></div>
-        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
-      </div>
-      <div class="sign-cell">
-        <div class="sign-lbl">主管確認</div>
-        <div class="sign-box"></div>
-        <div class="sign-date-row">日期：<div class="sign-line" style="width:120px;"></div></div>
-      </div>
-    </div>
+  <div class="sign-row-wrap">
+    <div class="sign-item">收貨人簽名：<div class="sign-blank"></div></div>
+    <div class="sign-item">送貨人簽名：<div class="sign-blank"></div></div>
   </div>
-
-  <div class="page-foot">D訂購系統 | 本單一式兩份，門市留存一份，司機攜回一份</div>
-  <div class="cut-line">✂ ─────────────────────────────────────────────────────────</div>
-</div>
-`).join('');
+  <div class="page-foot">D訂購系統｜本單一式兩份，門市留存一份，司機攜回一份</div>
+  <div class="cut-line">✂ ─────────────────────────────────────────────────────────────────</div>
+</div>`).join('');
 
   return`<!DOCTYPE html>
 <html lang="zh-TW"><head><meta charset="UTF-8"><title>出貨單</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* ── 熱感應/複寫紙最佳化：強制黑色、粗體、高對比 ── */
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC',sans-serif;font-size:12px;color:#1a2840;background:#fff;}
-.page-wrap{padding:18px 20px;max-width:800px;margin:0 auto;page-break-after:always;}
+body{
+  font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;
+  font-size:14pt;          /* 全局放大 */
+  font-weight:700;         /* 全局粗體 */
+  color:#000 !important;   /* 純黑，複寫紙最清晰 */
+  background:#fff;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.page-wrap{
+  padding:8mm 10mm;
+  max-width:210mm;
+  margin:0 auto;
+  page-break-after:always;
+}
 .page-wrap:last-child{page-break-after:avoid;}
-.doc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2.5px solid #1a3a5c;}
-.doc-title{font-size:18px;font-weight:700;color:#1a3a5c;letter-spacing:1px;}
-.doc-sub{font-size:10.5px;color:#666;margin-top:3px;}
-.doc-badge{padding:5px 16px;background:#1a3a5c;color:#fff;border-radius:6px;font-size:12px;font-weight:700;align-self:center;}
-.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1.5px solid #c0cfe0;border-radius:7px;overflow:hidden;margin-bottom:14px;}
-.info-cell{padding:7px 11px;border-right:1px solid #c0cfe0;border-bottom:1px solid #c0cfe0;}
+
+/* 頁眉 */
+.doc-header{border-bottom:3px solid #000;margin-bottom:5mm;padding-bottom:3mm;}
+.doc-title{font-size:18pt;font-weight:900;letter-spacing:1px;}
+.doc-meta{font-size:10pt;font-weight:600;margin-top:2px;}
+
+/* 基本資訊 */
+.info-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border:2px solid #000;margin-bottom:5mm;
+}
+.info-cell{padding:3mm 4mm;border-right:1.5px solid #000;border-bottom:1.5px solid #000;}
 .info-cell:nth-child(3n){border-right:none;}
 .info-cell:nth-last-child(-n+3){border-bottom:none;}
-.info-lbl{font-size:9.5px;color:#666;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
-.info-val{font-size:12.5px;font-weight:600;color:#1a2840;}
-.mono{font-family:monospace;}
-.section-title{font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
-.goods-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:11.5px;}
-.goods-table th{background:#1a3a5c;color:#fff;padding:6px 8px;text-align:left;font-size:11px;}
-.goods-table td{padding:6px 8px;border-bottom:1px solid #dde6f0;vertical-align:middle;}
-.goods-table tfoot td{border-top:2px solid #1a3a5c;}
-.row-alt{background:#f8fafd;}
-.chk-cell{text-align:center;}
-.chk-box{width:14px;height:14px;border:1.5px solid #666;border-radius:2px;margin:auto;}
-.rcv-cell{text-align:center;}
-.rcv-line{border-bottom:1.5px solid #333;height:20px;margin:0 4px;}
-.spec{font-size:10.5px;color:#666;}
-.center{text-align:center;}
-.right{text-align:right;}
-.bold{font-weight:700;}
-.sign-section{border:1.5px solid #c0cfe0;border-radius:8px;padding:12px 14px;margin-bottom:12px;}
-.sign-title{font-size:12.5px;font-weight:700;color:#1a3a5c;margin-bottom:10px;}
-.sign-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;}
-.sign-cell{display:flex;flex-direction:column;gap:6px;}
-.sign-lbl{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.5px;}
-.sign-note{font-size:10.5px;color:#444;line-height:1.7;}
-.sign-line-area{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
-.sign-row{display:flex;align-items:flex-end;gap:4px;font-size:10.5px;color:#444;}
-.sign-line{border-bottom:1px solid #444;height:18px;}
-.sign-box{border:1.5px solid #bbb;border-radius:4px;height:60px;background:#fafafa;}
-.sign-date-row{display:flex;align-items:flex-end;gap:4px;font-size:10.5px;color:#666;margin-top:3px;}
-.page-foot{font-size:9.5px;color:#888;text-align:center;margin-top:4px;}
-.cut-line{font-size:10px;color:#bbb;margin-top:10px;letter-spacing:2px;}
+.info-lbl{font-size:9pt;font-weight:900;letter-spacing:.3px;margin-bottom:1px;}
+.info-val{font-size:13pt;font-weight:700;}
+
+/* 貨品核對表 */
+.goods-table{width:100%;border-collapse:collapse;margin-bottom:5mm;}
+.goods-table th,.goods-table td{
+  border:1.5px solid #000;
+  padding:2.5mm 3mm;
+  text-align:left;
+  vertical-align:middle;
+}
+.goods-table th{
+  font-size:11pt;font-weight:900;
+  background:#000 !important;
+  color:#fff !important;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.goods-table td{font-size:13pt;font-weight:700;}
+.col-chk{width:8mm;text-align:center;}
+.col-code{width:18mm;}
+.col-name{width:auto;}
+.col-unit{width:14mm;text-align:center;}
+.col-qty{width:16mm;text-align:center;font-size:15pt;font-weight:900;}
+.col-rcv{width:20mm;}
+.col-note{width:24mm;}
+.row-alt{background:#f0f0f0 !important;}
+.chk-box{width:10px;height:10px;border:2px solid #000;display:inline-block;}
+.item-name{font-size:13pt;font-weight:700;line-height:1.3;}
+.item-spec{font-size:10pt;font-weight:600;color:#333;}
+.rcv-line{border-bottom:2px solid #000;height:8mm;margin:0 2mm;}
+
+/* 簽收欄 — 只有兩行 */
+.sign-row-wrap{
+  display:flex;gap:15mm;
+  margin-top:5mm;margin-bottom:4mm;
+  border-top:2px solid #000;
+  padding-top:4mm;
+}
+.sign-item{
+  display:flex;align-items:flex-end;gap:4mm;
+  font-size:14pt;font-weight:700;
+  flex:1;
+}
+.sign-blank{
+  border-bottom:2px solid #000;
+  flex:1;height:10mm;min-width:50mm;
+}
+
+/* 頁底 */
+.page-foot{font-size:9pt;font-weight:600;text-align:center;color:#333;}
+.cut-line{font-size:9pt;color:#666;margin-top:3mm;letter-spacing:2px;}
+
 @media print{
-  body{background:#fff;}
-  .page-wrap{padding:12px 14px;max-width:100%;}
+  body{font-size:14pt !important;}
+  .page-wrap{padding:5mm 8mm;max-width:100%;}
   .cut-line{display:none;}
+  @page{margin:8mm 6mm;size:A4;}
 }
 </style></head><body>
 ${pages}
 <script>window.onload=()=>window.print()<\/script>
 </body></html>`;
 }
-function openPrintWin(h){const w=window.open('','_blank','width=900,height=750');w.document.write(h);w.document.close();}
+function openPrintWin(h){const w=window.open('','_blank','width=960,height=800');w.document.write(h);w.document.close();}
 
 // ── STORE ORDER ──
 function renderStoreOrder(){S._cartItems=[];isMob()?renderMobOrder():renderDesktopOrder();}
@@ -1382,71 +1486,315 @@ function resetProdForm(){
   S._editProdId=null;document.getElementById('prod-form-title').textContent='新增品項';
 }
 
-// ACCOUNTS
+// ACCOUNTS — 完整帳款管理模組
 function renderAccounts(){
-  const stores=S.users.filter(u=>u.role==='store');
+  // 恢復上次篩選條件（localStorage記憶）
+  const saved = JSON.parse(localStorage.getItem('acc_filters')||'{}');
+  const now = new Date();
+  const thisYM = now.toISOString().slice(0,7);
   document.getElementById('acc-wrap').innerHTML=`
-    <table><thead><tr><th>門市</th><th>Email</th><th>訂單數</th><th>累計金額</th><th>待收款</th><th>已完成</th><th>操作</th></tr></thead>
-    <tbody>${stores.map(s=>{
-      const ords=S.orders.filter(o=>o.sid===s.id&&o.status!=='draft');
-      const total=ords.reduce((n,o)=>n+o.total,0);
-      const pend=ords.filter(o=>o.status!=='done').reduce((n,o)=>n+o.total,0);
-      const done=ords.filter(o=>o.status==='done').reduce((n,o)=>n+o.total,0);
-      return`<tr>
-        <td style="font-weight:700;">${s.sname}</td>
-        <td style="font-size:12px;color:var(--text2);">${s.email||'—'}</td>
-        <td>${ords.length}</td>
-        <td style="font-weight:700;color:var(--primary);">$${total.toLocaleString()}</td>
-        <td style="color:var(--warning);">$${pend.toLocaleString()}</td>
-        <td style="color:var(--success);">$${done.toLocaleString()}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="previewBill('${s.id}')">帳單預覽</button></td>
-      </tr>`;
-    }).join('')}</tbody></table>
-  `;
-}
-function openSendBillModal(){
-  const stores=S.users.filter(u=>u.role==='store');
-  document.getElementById('mb-body').innerHTML=`
-    <p style="font-size:12.5px;color:var(--text2);margin-bottom:10px;">選擇寄送門市（帳單含售價明細，僅業主可見）</p>
-    <div style="display:flex;flex-direction:column;gap:7px;">
-      ${stores.map(s=>`<label style="display:flex;align-items:center;gap:7px;font-size:13px;">
-        <input type="checkbox" name="bs" value="${s.id}" ${s.email?'checked':''} ${!s.email?'disabled':''}>
-        <span>${s.sname}${s.email?` (${s.email})`:'<span style="color:var(--text3);font-size:11px;"> — 未設定Email</span>'}</span>
-      </label>`).join('')}
+    <!-- 篩選列 -->
+    <div class="card" style="margin-bottom:1rem;padding:1rem;">
+      <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:10px;">🔍 篩選條件</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="field">
+          <label>年月（起）</label>
+          <input type="month" id="acc-from" value="${saved.from||thisYM}" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+        </div>
+        <div class="field">
+          <label>年月（迄）</label>
+          <input type="month" id="acc-to" value="${saved.to||thisYM}" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+        </div>
+        <div class="field">
+          <label>門市</label>
+          <select id="acc-store" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            <option value="">全部門市</option>
+            ${S.users.filter(u=>u.role==='store').map(s=>`<option value="${s.id}" ${saved.store===s.id?'selected':''}>${s.sname}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>狀態</label>
+          <select id="acc-status" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            <option value="">全部</option>
+            <option value="pending" ${saved.status==='pending'?'selected':''}>待確認</option>
+            <option value="confirmed" ${saved.status==='confirmed'?'selected':''}>已確認</option>
+            <option value="shipping" ${saved.status==='shipping'?'selected':''}>出貨中</option>
+            <option value="done" ${saved.status==='done'?'selected':''}>已完成</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="applyAccFilters()">套用篩選</button>
+        <button class="btn btn-outline btn-sm" onclick="resetAccFilters()">清除</button>
+      </div>
+    </div>
+
+    <!-- 統計報表選項 -->
+    <div class="card" style="margin-bottom:1rem;padding:1rem;">
+      <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:10px;">📊 統計報表選項 <span style="font-size:11px;font-weight:400;color:var(--text3);">（勾選後產出報表，設定自動記憶）</span></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;" id="rpt-checks">
+        ${[
+          ['rpt-revenue','本期總營收（售價合計）'],
+          ['rpt-cost','本期總成本'],
+          ['rpt-profit','扣除成本後利潤'],
+          ['rpt-avg','各門市平均叫貨金額'],
+          ['rpt-bystore','各門市明細'],
+          ['rpt-bycat','各分類用量統計'],
+          ['rpt-unpaid','未收款彙總'],
+        ].map(([k,lbl])=>{
+          const chk=JSON.parse(localStorage.getItem('rpt_opts')||'{}');
+          return`<label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;background:var(--surface2);padding:5px 10px;border-radius:6px;">
+            <input type="checkbox" id="${k}" ${chk[k]?'checked':''} onchange="saveRptOpts()"> ${lbl}
+          </label>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="renderAccReport()">📈 產出統計報表</button>
+        <button class="btn btn-outline btn-sm" onclick="exportAccExcel()">📊 匯出 Excel</button>
+        <button class="btn btn-outline btn-sm" onclick="exportAccPdf()">📄 帳單 PDF（列印）</button>
+        <button class="btn btn-accent btn-sm" onclick="openSendBillModal()">📧 寄月結帳單</button>
+      </div>
+    </div>
+
+    <!-- 統計報表顯示區 -->
+    <div id="acc-report" style="margin-bottom:1rem;"></div>
+
+    <!-- 帳款總表 -->
+    <div class="card">
+      <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:10px;">帳款總表</div>
+      <div class="table-wrap" id="acc-table"></div>
     </div>
   `;
-  openM('modal-bill');
+  applyAccFilters();
 }
-function confirmSendBill(){
-  const ids=[...document.querySelectorAll('[name=bs]:checked')].map(c=>c.value);
-  if(!ids.length){toast('請選擇門市','danger');return;}
-  ids.forEach(sid=>{
-    const s=S.users.find(u=>u.id===sid);
-    addNotif('bill','💰 月結帳單',`${s.sname} 月結帳單已寄出，請業主確認`,sid);
+
+function saveRptOpts(){
+  const opts={};
+  ['rpt-revenue','rpt-cost','rpt-profit','rpt-avg','rpt-bystore','rpt-bycat','rpt-unpaid']
+    .forEach(k=>{const el=document.getElementById(k);if(el)opts[k]=el.checked;});
+  localStorage.setItem('rpt_opts',JSON.stringify(opts));
+}
+
+function getAccFilters(){
+  return{
+    from: document.getElementById('acc-from')?.value||'',
+    to:   document.getElementById('acc-to')?.value||'',
+    store:document.getElementById('acc-store')?.value||'',
+    status:document.getElementById('acc-status')?.value||'',
+  };
+}
+function applyAccFilters(){
+  const f=getAccFilters();
+  localStorage.setItem('acc_filters',JSON.stringify(f));
+  let ords=S.orders.filter(o=>o.status!=='draft');
+  if(f.from) ords=ords.filter(o=>o.date>=f.from+'-01');
+  if(f.to)   ords=ords.filter(o=>o.date<=f.to+'-31');
+  if(f.store) ords=ords.filter(o=>o.sid===f.store);
+  if(f.status) ords=ords.filter(o=>o.status===f.status);
+  renderAccTable(ords);
+}
+function resetAccFilters(){
+  localStorage.removeItem('acc_filters');
+  renderAccounts();
+}
+
+function renderAccTable(ords){
+  const stores=S.users.filter(u=>u.role==='store');
+  const stMap={pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
+  document.getElementById('acc-table').innerHTML=`
+    <table><thead><tr>
+      <th>門市</th><th>訂單號</th><th>訂單日期</th><th>到貨日</th><th>品項</th>
+      <th>配送方式</th><th>金額</th><th>狀態</th><th>操作</th>
+    </tr></thead>
+    <tbody>${ords.length?ords.map(o=>`<tr>
+      <td style="font-weight:700;">${o.sname}</td>
+      <td style="font-size:11.5px;font-family:monospace;color:var(--info);">${o.id}</td>
+      <td>${o.date}</td><td>${o.delivery||'—'}</td>
+      <td style="font-size:12px;">${o.items.slice(0,2).map(i=>i.name).join('、')}${o.items.length>2?`…等${o.items.length}項`:''}</td>
+      <td><span class="tag">${o.delivery_type||'總部配送'}</span></td>
+      <td style="font-weight:700;">$${o.total.toLocaleString()}</td>
+      <td>${stBadge(o.status)}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="previewOneBill('${o.sid}','${o.id}')">帳單</button></td>
+    </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3);">此期間無資料</td></tr>'}
+    </tbody>
+    <tfoot><tr>
+      <td colspan="6" style="text-align:right;font-weight:700;padding:9px 12px;background:var(--surface2);">篩選範圍合計</td>
+      <td style="font-weight:700;font-size:14px;padding:9px 12px;background:var(--surface2);">$${ords.reduce((s,o)=>s+o.total,0).toLocaleString()}</td>
+      <td colspan="2" style="background:var(--surface2);"></td>
+    </tr></tfoot>
+    </table>
+  `;
+}
+
+function renderAccReport(){
+  const f=getAccFilters();
+  let ords=S.orders.filter(o=>o.status!=='draft');
+  if(f.from) ords=ords.filter(o=>o.date>=f.from+'-01');
+  if(f.to)   ords=ords.filter(o=>o.date<=f.to+'-31');
+  if(f.store) ords=ords.filter(o=>o.sid===f.store);
+
+  const opts=JSON.parse(localStorage.getItem('rpt_opts')||'{}');
+  if(!Object.values(opts).some(Boolean)){toast('請至少勾選一項報表選項','danger');return;}
+
+  const revenue=ords.reduce((s,o)=>s+o.total,0);
+  const cost=ords.reduce((s,o)=>s+o.items.reduce((ss,i)=>{
+    const p=S.products.find(x=>x.id===i.pid||x.code===i.code);
+    return ss+(p?p.cost*i.qty:0);
+  },0),0);
+  const profit=revenue-cost;
+  const stores=S.users.filter(u=>u.role==='store');
+  const storeCount=f.store?1:stores.length;
+  const avg=storeCount>0?Math.round(revenue/storeCount):0;
+
+  const bySid={};
+  ords.forEach(o=>{
+    if(!bySid[o.sid]) bySid[o.sid]={sname:o.sname,total:0,cnt:0,unpaid:0};
+    bySid[o.sid].total+=o.total; bySid[o.sid].cnt++;
+    if(o.status!=='done') bySid[o.sid].unpaid+=o.total;
   });
-  closeM('modal-bill');toast(`已寄出 ${ids.length} 份月結帳單`,'success');
+  const byCat={};
+  ords.forEach(o=>o.items.forEach(i=>{
+    const p=S.products.find(x=>x.id===i.pid||x.code===i.code);
+    const cat=p?.cat||'其他';
+    if(!byCat[cat]) byCat[cat]={qty:0,total:0};
+    byCat[cat].qty+=i.qty; byCat[cat].total+=i.price*i.qty;
+  }));
+
+  const period=`${f.from||'—'} ～ ${f.to||'—'}`;
+  let html=`<div class="card" style="margin-bottom:1rem;">
+    <div style="font-size:14px;font-weight:700;color:var(--primary);margin-bottom:12px;">📊 統計報表 <span style="font-size:11.5px;font-weight:400;color:var(--text3);">${period}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:12px;">`;
+
+  if(opts['rpt-revenue']) html+=`<div class="stat-card"><div class="stat-label">本期總營收</div><div class="stat-value" style="color:var(--primary);">$${revenue.toLocaleString()}</div></div>`;
+  if(opts['rpt-cost'])    html+=`<div class="stat-card"><div class="stat-label">本期總成本</div><div class="stat-value" style="color:var(--danger);">$${cost.toLocaleString()}</div></div>`;
+  if(opts['rpt-profit'])  html+=`<div class="stat-card"><div class="stat-label">毛利潤</div><div class="stat-value" style="color:var(--success);">$${profit.toLocaleString()}</div><div class="stat-sub">毛利率 ${revenue?Math.round(profit/revenue*100):0}%</div></div>`;
+  if(opts['rpt-avg'])     html+=`<div class="stat-card"><div class="stat-label">平均每店叫貨</div><div class="stat-value">$${avg.toLocaleString()}</div><div class="stat-sub">${storeCount} 家門市</div></div>`;
+  html+=`</div>`;
+
+  if(opts['rpt-bystore']) html+=`
+    <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:7px;">各門市明細</div>
+    <div class="table-wrap" style="margin-bottom:12px;"><table>
+      <thead><tr><th>門市</th><th>訂單數</th><th>叫貨金額</th><th>未收款</th><th>佔比</th></tr></thead>
+      <tbody>${Object.values(bySid).map(d=>`<tr>
+        <td style="font-weight:700;">${d.sname}</td><td>${d.cnt}</td>
+        <td style="font-weight:700;">$${d.total.toLocaleString()}</td>
+        <td style="color:var(--warning);">$${d.unpaid.toLocaleString()}</td>
+        <td><div style="background:#e8edf5;border-radius:4px;height:8px;width:100%;max-width:120px;overflow:hidden;"><div style="background:var(--primary);height:100%;width:${revenue?Math.round(d.total/revenue*100):0}%;"></div></div> ${revenue?Math.round(d.total/revenue*100):0}%</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+
+  if(opts['rpt-bycat']) html+=`
+    <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:7px;">分類用量統計</div>
+    <div class="table-wrap" style="margin-bottom:12px;"><table>
+      <thead><tr><th>分類</th><th>出貨量</th><th>金額合計</th></tr></thead>
+      <tbody>${Object.entries(byCat).sort((a,b)=>b[1].total-a[1].total).map(([cat,d])=>`<tr>
+        <td><span class="tag">${cat}</span></td>
+        <td>${d.qty}</td>
+        <td style="font-weight:700;">$${d.total.toLocaleString()}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+
+  if(opts['rpt-unpaid']){
+    const unpaid=ords.filter(o=>o.status!=='done');
+    html+=`
+    <div style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:7px;">未收款彙總</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>門市</th><th>訂單號</th><th>日期</th><th>金額</th><th>狀態</th></tr></thead>
+      <tbody>${unpaid.map(o=>`<tr>
+        <td>${o.sname}</td>
+        <td style="font-size:11.5px;font-family:monospace;">${o.id}</td>
+        <td>${o.date}</td>
+        <td style="font-weight:700;color:var(--warning);">$${o.total.toLocaleString()}</td>
+        <td>${stBadge(o.status)}</td>
+      </tr>`).join('')}
+      <tr><td colspan="3" style="text-align:right;font-weight:700;background:var(--surface2);">未收款合計</td>
+        <td style="font-weight:700;color:var(--warning);background:var(--surface2);">$${unpaid.reduce((s,o)=>s+o.total,0).toLocaleString()}</td><td style="background:var(--surface2);"></td></tr>
+      </tbody>
+    </table></div>`;
+  }
+
+  html+=`</div>`;
+  document.getElementById('acc-report').innerHTML=html;
+  toast('報表已產出','success');
 }
-function previewBill(sid){
-  const s=S.users.find(u=>u.id===sid);
-  const ords=S.orders.filter(o=>o.sid===sid&&o.status!=='draft');
-  const stMap={draft:'草稿',pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
-  openPrintWin(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>月結帳單</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>body{font-family:'Noto Sans TC',sans-serif;padding:18px;font-size:13px;}h2{color:#1a3a5c;}
-  table{width:100%;border-collapse:collapse;}th{background:#1a3a5c;color:#fff;padding:7px 10px;text-align:left;}
-  td{padding:7px 10px;border-bottom:1px solid #e0e8f0;}tfoot td{font-weight:700;background:#f4f6fa;}
-  .warn{font-size:11px;color:#888;margin-top:10px;}</style></head><body>
-  <h2>D訂購系統 — ${s.sname} 月結帳單</h2>
-  <p style="color:#666;font-size:12px;">列印時間：${new Date().toLocaleString('zh-TW')}</p>
-  <table><thead><tr><th>訂單號</th><th>日期</th><th>品項</th><th>金額（含稅售價）</th><th>狀態</th></tr></thead>
+
+function exportAccExcel(){
+  const f=getAccFilters();
+  let ords=S.orders.filter(o=>o.status!=='draft');
+  if(f.from) ords=ords.filter(o=>o.date>=f.from+'-01');
+  if(f.to)   ords=ords.filter(o=>o.date<=f.to+'-31');
+  if(f.store) ords=ords.filter(o=>o.sid===f.store);
+  // 產出 CSV（Excel 可直接開啟）
+  const stMap={pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
+  const rows=[['訂單號','門市','日期','到貨日','品項','金額','狀態','配送']];
+  ords.forEach(o=>rows.push([
+    o.id, o.sname, o.date, o.delivery||'',
+    o.items.map(i=>`${i.name}×${i.qty}`).join('／'),
+    o.total, stMap[o.status]||o.status, o.delivery_type||'總部配送'
+  ]));
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`D訂購帳款_${f.from||'all'}_${f.to||'all'}.csv`;
+  a.click();
+  toast('Excel(CSV) 已下載','success');
+}
+
+function exportAccPdf(){
+  const f=getAccFilters();
+  let ords=S.orders.filter(o=>o.status!=='draft');
+  if(f.from) ords=ords.filter(o=>o.date>=f.from+'-01');
+  if(f.to)   ords=ords.filter(o=>o.date<=f.to+'-31');
+  if(f.store) ords=ords.filter(o=>o.sid===f.store);
+  const stMap={pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
+  const period=`${f.from||'全部'} ～ ${f.to||'全部'}`;
+  const store=f.store?S.users.find(u=>u.id===f.store)?.sname||'':'全部門市';
+  openPrintWin(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>帳款報表</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Microsoft JhengHei',sans-serif;padding:15mm;font-size:11pt;color:#000;}
+  h1{font-size:16pt;font-weight:900;color:#1a3a5c;margin-bottom:5px;}
+  .meta{font-size:10pt;color:#444;margin-bottom:10mm;}
+  table{width:100%;border-collapse:collapse;margin-bottom:8mm;font-size:10pt;}
+  th{background:#1a3a5c;color:#fff;padding:5px 8px;text-align:left;font-size:10pt;}
+  td{padding:5px 8px;border-bottom:1px solid #ccc;}
+  tfoot td{font-weight:700;background:#f0f4f8;border-top:2px solid #1a3a5c;}
+  .total{font-size:14pt;font-weight:900;color:#1a3a5c;margin-bottom:5mm;}
+  .warn{font-size:9pt;color:#888;margin-top:5mm;}
+  @page{margin:10mm;size:A4;}
+  </style></head><body>
+  <h1>D訂購系統 — 帳款報表</h1>
+  <div class="meta">期間：${period}　門市：${store}　產出時間：${new Date().toLocaleString('zh-TW')}</div>
+  <div class="total">本期總計：$${ords.reduce((s,o)=>s+o.total,0).toLocaleString()}</div>
+  <table><thead><tr><th>訂單號</th><th>門市</th><th>日期</th><th>品項</th><th>金額</th><th>狀態</th></tr></thead>
   <tbody>${ords.map(o=>`<tr>
-    <td>${o.id}</td><td>${o.date}</td>
-    <td style="font-size:11.5px;">${o.items.map(i=>`${i.name}×${i.qty}`).join('、')}</td>
+    <td style="font-family:monospace;">${o.id}</td><td>${o.sname}</td><td>${o.date}</td>
+    <td style="font-size:9pt;">${o.items.slice(0,3).map(i=>`${i.name}×${i.qty}`).join('、')}${o.items.length>3?'…':''}</td>
     <td style="font-weight:700;">$${o.total.toLocaleString()}</td>
-    <td>${stMap[o.status]}</td>
+    <td>${stMap[o.status]||o.status}</td>
   </tr>`).join('')}</tbody>
-  <tfoot><tr><td colspan="3" style="text-align:right;font-weight:700;">合計</td><td>$${ords.reduce((s,o)=>s+o.total,0).toLocaleString()}</td><td></td></tr></tfoot></table>
-  <p class="warn">本帳單含售價明細，僅供業主確認，請勿外洩。</p>
+  <tfoot><tr><td colspan="4" style="text-align:right;">合計</td><td>$${ords.reduce((s,o)=>s+o.total,0).toLocaleString()}</td><td></td></tr></tfoot></table>
+  <p class="warn">本帳款報表含售價資訊，請妥善保管。</p>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+}
+
+function previewOneBill(sid,ordId){
+  const s=S.users.find(u=>u.id===sid);
+  const o=S.orders.find(x=>x.id===ordId);
+  if(!o)return;
+  const stMap={pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};
+  openPrintWin(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>帳單</title>
+  <style>body{font-family:'Microsoft JhengHei',sans-serif;padding:15mm;font-size:11pt;}
+  h2{color:#1a3a5c;margin-bottom:6px;}table{width:100%;border-collapse:collapse;}
+  th{background:#1a3a5c;color:#fff;padding:5px 8px;text-align:left;}
+  td{padding:5px 8px;border-bottom:1px solid #ccc;}
+  tfoot td{font-weight:700;background:#f0f4f8;}
+  .warn{font-size:9pt;color:#888;margin-top:8mm;}
+  @page{margin:10mm;size:A4;}</style></head><body>
+  <h2>D訂購系統 — ${s?.sname} 帳單明細</h2>
+  <p style="font-size:10pt;color:#666;margin-bottom:8mm;">訂單：${o.id}　日期：${o.date}　狀態：${stMap[o.status]}　產出：${new Date().toLocaleString('zh-TW')}</p>
+  <table><thead><tr><th>品號</th><th>品名</th><th>規格</th><th>單位</th><th>數量</th><th>含稅售價</th><th>小計</th></tr></thead>
+  <tbody>${o.items.map(i=>`<tr><td>${i.code}</td><td>${i.name}</td><td>${i.spec||''}</td><td>${i.unit}</td>
+    <td>${i.qty}</td><td>$${i.price.toLocaleString()}</td><td>$${(i.qty*i.price).toLocaleString()}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="6" style="text-align:right;">合計</td><td>$${o.total.toLocaleString()}</td></tr></tfoot></table>
+  <p class="warn">本帳單含售價資訊，僅供業主確認，請勿外洩。</p>
   <script>window.onload=()=>window.print()<\/script></body></html>`);
 }
 
@@ -1571,6 +1919,31 @@ function toast(msg,type=''){
   i.innerHTML=(type==='success'?'✅ ':type==='danger'?'❌ ':'ℹ️ ')+msg;
   document.getElementById('toast').appendChild(i);
   setTimeout(()=>i.remove(),3200);
+}
+
+// ── 匯出 HTML 備份（含目前所有 localStorage 資料內嵌）──
+function exportHTML(){
+  const html = document.documentElement.outerHTML;
+  const dataScript = `<script>
+(function(){
+  const backup = ${JSON.stringify({
+    derp_users:  localStorage.getItem('derp_users'),
+    derp_orders: localStorage.getItem('derp_orders'),
+    derp_notifs: localStorage.getItem('derp_notifs'),
+    acc_filters: localStorage.getItem('acc_filters'),
+    rpt_opts:    localStorage.getItem('rpt_opts'),
+  })};
+  Object.entries(backup).forEach(([k,v])=>{ if(v) localStorage.setItem(k,v); });
+})();
+<\/script>`;
+  const finalHtml = html.replace('</body>', dataScript + '\n</body>');
+  const blob = new Blob([finalHtml], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const ts = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download = `D訂購系統_備份_${ts}.html`;
+  a.click();
+  toast('備份已下載！開啟後資料自動還原','success');
 }
 
 // ══════════════════════════════════════════
