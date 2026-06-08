@@ -504,6 +504,7 @@ let S = {
   _editUserId: null,
   _editOrderId: null,
   _cartItems: [],
+  _oosRemoved: [],
   _mobCat: '',
   users: [
     {id:'HQ',no:'00',username:'HQ_admin',password:'admin2024',role:'hq',sname:'總部管理',email:'',phone:'',pwAt:Date.now()},
@@ -827,16 +828,16 @@ function renderHQOGrid(){
     ${prods.map(p=>{
       const ic=S._cartItems.find(i=>i.pid===p.id);
       const isOos=p.pstatus==='oos';
-      return`<div class="card" style="padding:11px;${ic?'border-color:var(--accent);':''}${isOos?'opacity:0.7;':''}" id="hqopc-${p.id}">
+      return`<div class="card" style="padding:11px;${ic?'border-color:var(--accent);':''}" id="hqopc-${p.id}">
         <div style="font-size:10.5px;font-family:monospace;color:var(--info);">${p.code}</div>
         <div style="font-size:13px;font-weight:700;margin:3px 0 1px;">${p.name}</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:5px;">${p.spec||''} | ${p.unit}</div>
-        ${isOos?`<div style="font-size:11px;color:var(--warning);background:var(--warning-bg);padding:2px 6px;border-radius:4px;margin-bottom:5px;">暫時缺貨</div>`:''}
-        ${isOos?'':`<div style="display:flex;align-items:center;gap:5px;">
+        ${isOos?`<div style="font-size:11px;color:var(--warning);background:var(--warning-bg);padding:2px 6px;border-radius:4px;margin-bottom:5px;">⚠ 缺貨中（仍可下單）</div>`:''}
+        <div style="display:flex;align-items:center;gap:5px;">
           <button onclick="hqoQChange('${p.id}',-1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">−</button>
           <input type="number" min="0" value="${ic?ic.qty:0}" id="hqodq-${p.id}" onchange="hqoSet('${p.id}',this.value)" style="width:42px;text-align:center;padding:4px 2px;border:1.5px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;">
           <button onclick="hqoQChange('${p.id}',1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">＋</button>
-        </div>`}
+        </div>
       </div>`;}).join('')}
     </div>`;
   renderHQOCart();
@@ -1195,6 +1196,7 @@ function viewOrder(id){
 
 function hqEdit(id){
   S._editOrderId=id;
+  S._oosRemoved=[];
   const o=S.orders.find(x=>x.id===id);
   S._cartItems=[...o.items.map(i=>({...i}))];
   document.getElementById('mo-title').textContent=`編輯訂單 — ${o.id}`;
@@ -1229,23 +1231,39 @@ function heAddItem(){
 }
 function renderHeItems(){
   document.getElementById('he-items').innerHTML=`
-    <table class="oi-table"><thead><tr><th>品號</th><th>品名</th><th>單位</th><th>數量</th><th></th></tr></thead>
+    <table class="oi-table"><thead><tr><th>品號</th><th>品名</th><th>單位</th><th>數量</th><th>操作</th></tr></thead>
     <tbody>${S._cartItems.map((item,i)=>`<tr>
       <td style="font-family:monospace;font-size:11.5px;color:var(--info);">${item.code}</td>
       <td>${item.name}</td><td>${item.unit}</td>
       <td><input type="number" min="1" value="${item.qty}" onchange="heQty(${i},this.value)" style="width:60px;padding:3px 6px;border:1.5px solid var(--border);border-radius:5px;font-size:13px;"></td>
-      <td><button onclick="heRemove(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;">✕</button></td>
+      <td style="white-space:nowrap;">
+        <button onclick="heRemoveOos(${i})" style="background:var(--warning-bg);border:1px solid #f59e0b;color:var(--warning);border-radius:5px;font-size:11.5px;font-weight:700;cursor:pointer;padding:3px 7px;margin-right:4px;" title="因庫存不足取消此品項，並通知門市">⚠ 缺貨取消</button>
+        <button onclick="heRemove(${i})" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:15px;" title="直接移除">✕</button>
+      </td>
     </tr>`).join('')}</tbody></table>
   `;
 }
 function heQty(i,v){S._cartItems[i].qty=parseInt(v)||1;renderHeItems();}
 function heRemove(i){S._cartItems.splice(i,1);renderHeItems();}
+function heRemoveOos(i){
+  if(!S._oosRemoved) S._oosRemoved=[];
+  S._oosRemoved.push(S._cartItems[i].name+'（'+S._cartItems[i].code+'）×'+S._cartItems[i].qty);
+  S._cartItems.splice(i,1);
+  renderHeItems();
+  toast('已標記缺貨取消，儲存後將通知門市','');
+}
 function saveHqEdit(){
   const o=S.orders.find(x=>x.id===S._editOrderId);
   o.delivery=document.getElementById('he-del').value;
   o.note=document.getElementById('he-note').value;
   o.items=S._cartItems;
   o.total=S._cartItems.reduce((s,i)=>s+(i.qty*i.price),0);
+  if(S._oosRemoved&&S._oosRemoved.length>0){
+    const cancelNote='【缺貨取消】'+S._oosRemoved.join('、');
+    o.note=(o.note?o.note+'　':'')+cancelNote;
+    addNotif('oos','⚠ 部分品項因庫存不足取消',`訂單 ${o.id} 以下品項已由總部取消：${S._oosRemoved.join('、')}`,o.sid);
+    S._oosRemoved=[];
+  }
   saveAll();
   closeM('modal-order');renderOrderTable();toast('訂單已更新','success');
 }
@@ -1483,17 +1501,17 @@ function renderDesktopGrid(){
     ${prods.map(p=>{
       const ic=S._cartItems.find(i=>i.pid===p.id);
       const isOos=(p.pstatus||'active')==='oos';
-      return`<div class="card" style="padding:11px;${ic?'border-color:var(--accent);':''}${isOos?'opacity:0.7;':''}" id="pc-${p.id}">
+      return`<div class="card" style="padding:11px;${ic?'border-color:var(--accent);':''}" id="pc-${p.id}">
         <div style="font-size:10.5px;font-family:monospace;color:var(--info);">${p.code}</div>
         <div style="font-size:13px;font-weight:700;margin:3px 0 1px;">${p.name}</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:${p.note?'3px':'7px'};">${p.spec||''} | ${p.unit}</div>
         ${p.note?`<div style="font-size:10.5px;color:var(--warning);background:var(--warning-bg);padding:3px 6px;border-radius:4px;margin-bottom:6px;">${p.note}</div>`:''}
-        \${isOos?'<div style="font-size:11px;color:var(--warning);background:var(--warning-bg);padding:3px 7px;border-radius:4px;margin-bottom:5px;text-align:center;font-weight:700;">⚠ 暫時缺貨，無法下單</div>':''}
-        \${isOos?'':\`<div style="display:flex;align-items:center;gap:5px;">
-          <button onclick="dqChange('\${p.id}',-1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">−</button>
-          <input type="number" min="0" value="\${ic?ic.qty:0}" id="dq-\${p.id}" onchange="dqSet('\${p.id}',this.value)" style="width:42px;text-align:center;padding:4px 2px;border:1.5px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;">
-          <button onclick="dqChange('\${p.id}',1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">＋</button>
-        </div>\`}
+        ${isOos?`<div style="font-size:11px;color:var(--warning);background:var(--warning-bg);padding:3px 7px;border-radius:4px;margin-bottom:5px;text-align:center;font-weight:700;">⚠ 缺貨中（仍可下單）</div>`:''}
+        <div style="display:flex;align-items:center;gap:5px;">
+          <button onclick="dqChange('${p.id}',-1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">−</button>
+          <input type="number" min="0" value="${ic?ic.qty:0}" id="dq-${p.id}" onchange="dqSet('${p.id}',this.value)" style="width:42px;text-align:center;padding:4px 2px;border:1.5px solid var(--border);border-radius:5px;font-size:14px;font-weight:700;">
+          <button onclick="dqChange('${p.id}',1)" style="width:27px;height:27px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary);">＋</button>
+        </div>
       </div>`;
     }).join('')}
     </div>
@@ -1567,19 +1585,18 @@ function renderMobList(){
     const ic=S._cartItems.find(i=>i.pid===p.id);
     const qty=ic?ic.qty:0;
     const pOos=(p.pstatus||'active')==='oos';
-    h+=`<div class="mob-pcard${qty>0?' in-cart':''}" style="${pOos?'border-color:var(--warning);opacity:0.8;':''}" id="mpc-${p.id}">
+    h+=`<div class="mob-pcard${qty>0?' in-cart':''}" id="mpc-${p.id}">
       <div class="mob-pinfo">
         <div class="mob-pcode">${p.code}</div>
         <div class="mob-pname">${p.name}</div>
         <div class="mob-pspec">${p.spec||''} ${p.unit}</div>
         ${p.note?`<div class="mob-note">${p.note}</div>`:''}
-        ${pOos?`<div class="mob-note" style="color:var(--warning);">⚠ 暫時缺貨</div>`:''}
+        ${pOos?`<div class="mob-note" style="color:var(--warning);">⚠ 缺貨中（仍可下單）</div>`:''}
       </div>
       <div class="qty-ctrl">
-        ${pOos?`<span style="font-size:11.5px;color:var(--warning);font-weight:700;padding:4px 6px;">缺貨</span>`:`
         <button class="qty-btn" onclick="mqChange('${p.id}',-1)">−</button>
         <input class="qty-inp" type="number" min="0" value="${qty}" id="mq-${p.id}" onchange="mqSet('${p.id}',this.value)">
-        <button class="qty-btn" onclick="mqChange('${p.id}',1)">＋</button>`}
+        <button class="qty-btn" onclick="mqChange('${p.id}',1)">＋</button>
       </div>
     </div>`;
   });
