@@ -1567,7 +1567,7 @@ function renderMobList(){
     const ic=S._cartItems.find(i=>i.pid===p.id);
     const qty=ic?ic.qty:0;
     const pOos=(p.pstatus||'active')==='oos';
-    h+=`<div class="mob-pcard${qty>0?' in-cart':''}" style="${pOos?'border-color:var(--warning);opacity:0.8;':''}" id="mpc-${p.id}">`;
+    h+=`<div class="mob-pcard${qty>0?' in-cart':''}" style="${pOos?'border-color:var(--warning);opacity:0.8;':''}" id="mpc-${p.id}">
       <div class="mob-pinfo">
         <div class="mob-pcode">${p.code}</div>
         <div class="mob-pname">${p.name}</div>
