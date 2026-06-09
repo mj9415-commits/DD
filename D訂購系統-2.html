@@ -2751,26 +2751,25 @@ function printDispatchGroup(encodedKey){
       <tr>
         <td class="c-seq">${idx+1}</td>
         <td class="c-code">${i.code}</td>
-        <td class="c-name"><b>${i.name}</b>${i.spec?`／${i.spec}`:''}</td>
+        <td class="c-name"><b>${i.name}</b>${i.spec?`<br><span class="c-spec">${i.spec}</span>`:''}</td>
         <td class="c-qty"><b>${i.stores[storeName]||0}</b></td>
         <td class="c-unit">${i.unit}</td>
       </tr>`).join('');
     return`<div class="pw${pgIdx>0?' pb':''}">
-  <div style="text-align:center;margin-bottom:3mm;">
-    <div style="font-size:16pt;font-weight:900;letter-spacing:2px;">思茶國際餐飲管理顧問有限公司</div>
-    <div style="font-size:14pt;font-weight:900;letter-spacing:6px;margin-top:2px;">配 送 單 憑 證</div>
+  <div class="hdr-title">
+    <div class="co-name">思茶國際餐飲管理顧問有限公司</div>
+    <div class="doc-name">配 送 單 憑 證</div>
   </div>
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2mm;border-top:2px solid #000;padding-top:2mm;">
-    <div style="font-size:9pt;">新竹縣新豐鄉漳興路一段92號&nbsp;&nbsp;電話：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;聯絡人：</div>
-    <div style="font-size:9pt;font-weight:700;">叫貨日期：${orderDate}</div>
+  <div class="hdr-sub">
+    <span>新竹縣新豐鄉漳興路一段92號&nbsp;&nbsp;電話：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;聯絡人：</span>
+    <span><b>叫貨日期：${orderDate}</b></span>
   </div>
-  <div style="display:flex;justify-content:space-between;border:1.5px solid #000;padding:3mm 4mm;margin-bottom:2mm;">
-    <div style="font-size:10pt;line-height:1.8;">
+  <div class="info-row">
+    <div class="info-left">
       <div><b>配送單號：</b>${orderIdsTxt}</div>
-      <div><b>配送日期：</b>${today}</div>
-      <div><b>配至門市：</b><span style="font-size:12pt;font-weight:900;">${storeName}</span></div>
+      <div><b>配送日期：</b>${today}&nbsp;&nbsp;&nbsp;<b>配至門市：</b><span class="store-name">${storeName}</span></div>
     </div>
-    <div style="font-size:10pt;font-weight:700;align-self:center;">頁 次：${pgIdx+1}/${[...g.storeNames].length}</div>
+    <div class="page-num">頁 次：${pgIdx+1}/${[...g.storeNames].length}</div>
   </div>
   <table>
     <thead><tr>
@@ -2780,36 +2779,56 @@ function printDispatchGroup(encodedKey){
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <div style="display:flex;justify-content:flex-end;border-top:2px solid #000;padding:2mm 0;margin-top:0;">
-    <span style="font-size:11pt;font-weight:900;">數量合計：&nbsp;&nbsp;${totalQty}</span>
-  </div>
-  <div style="font-size:9pt;font-weight:700;margin:2mm 0;">備計：&nbsp;${delLabel}；</div>
-  <div style="display:flex;gap:0;border-top:1.5px solid #000;padding-top:3mm;margin-top:2mm;">
+  <div class="total-row">數量合計：<b>${totalQty}</b></div>
+  <div class="note-row">備計：${delLabel}；</div>
+  <div class="sign-row">
     <div class="si">主&ensp;管：<div class="sl"></div></div>
     <div class="si">覆&ensp;核：<div class="sl"></div></div>
     <div class="si">會&ensp;計：<div class="sl"></div></div>
     <div class="si">承&ensp;辦：<div class="sl"></div></div>
   </div>
-  <div style="text-align:center;font-size:9pt;margin-top:4mm;font-weight:700;">─── 結 束 ───</div>
+  <div class="end-mark">─── 結 束 ───</div>
 </div>`;
   }).join('');
 
   const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>配送單憑證</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:10.5pt;color:#000;background:#fff;}
-.pw{padding:10mm 14mm;max-width:210mm;margin:0 auto;}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:9.5pt;color:#000;background:#fff;line-height:1.3;}
+.pw{padding:7mm 12mm 6mm;max-width:210mm;margin:0 auto;}
 .pb{page-break-before:always;}
+/* 標題區 ─ 縮50% */
+.hdr-title{text-align:center;margin-bottom:0.5mm;}
+.co-name{font-size:9.5pt;font-weight:900;letter-spacing:0.5px;}
+.doc-name{font-size:8.5pt;font-weight:900;letter-spacing:4px;margin-top:0;}
+/* 副標題行 */
+.hdr-sub{display:flex;justify-content:space-between;font-size:7pt;border-top:2px solid #000;border-bottom:1px solid #000;padding:0.8mm 0;margin-bottom:1mm;}
+/* 資訊框 */
+.info-row{display:flex;justify-content:space-between;align-items:center;border:1.5px solid #000;padding:1.5mm 4mm;margin-bottom:1.5mm;}
+.info-left{font-size:8.5pt;line-height:1.45;}
+.page-num{font-size:8.5pt;font-weight:700;}
+.store-name{font-size:9.5pt;font-weight:900;}
+/* 表格 */
 table{width:100%;border-collapse:collapse;border:1.5px solid #000;}
-th{background:#000;color:#fff;padding:4px 7px;font-size:10pt;font-weight:900;border:1px solid #000;}
-td{padding:5px 7px;border:1px solid #999;font-size:10.5pt;vertical-align:middle;}
-.c-seq{width:30px;text-align:center;}
-.c-code{width:45px;font-family:monospace;font-weight:700;}
+/* 表頭 ─ 縮50% */
+th{background:#000;color:#fff;padding:1.2px 4px;font-size:6.5pt;font-weight:900;border:1px solid #000;text-align:left;}
+td{padding:2px 5px;border:1px solid #bbb;font-size:9.5pt;vertical-align:middle;}
+.c-seq{width:28px;text-align:center;}
+.c-code{width:42px;font-family:monospace;font-weight:700;font-size:9pt;}
 .c-name{font-weight:700;}
-.c-qty{width:50px;text-align:center;font-size:13pt;font-weight:900;}
-.c-unit{width:40px;text-align:center;font-weight:700;}
-.si{flex:1;font-size:10.5pt;font-weight:700;padding-right:5mm;}
-.sl{border-bottom:1.5px solid #000;height:12mm;margin-top:2mm;}
+.c-spec{font-size:8pt;font-weight:400;color:#333;}
+.c-qty{width:48px;text-align:center;font-size:13pt;font-weight:900;}
+.c-unit{width:38px;text-align:center;font-weight:700;}
+/* 合計行 */
+.total-row{text-align:right;font-size:10.5pt;font-weight:900;border-top:2px solid #000;padding:1.5mm 0;margin-top:0;}
+/* 備計 */
+.note-row{font-size:8.5pt;font-weight:700;margin:1.5mm 0;}
+/* 簽名列 */
+.sign-row{display:flex;border-top:1.5px solid #000;padding-top:2mm;margin-top:1mm;}
+.si{flex:1;font-size:9.5pt;font-weight:700;padding-right:4mm;}
+.sl{border-bottom:1.5px solid #000;height:10mm;margin-top:1.5mm;}
+/* 結束 */
+.end-mark{text-align:center;font-size:8.5pt;margin-top:2mm;font-weight:700;}
 @media print{body{background:#fff;}@page{margin:0;size:A4;}.pb{page-break-before:always;}}
 </style></head><body>
 ${storePages}
