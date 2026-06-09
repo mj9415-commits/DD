@@ -98,6 +98,7 @@ table tr:hover td{background:#f8fafd;}
 .status-draft{background:#f0f0f0;color:#777;}.status-draft::before{background:#bbb;}
 .status-inactive{background:#fee2e2;color:#991b1b;}.status-inactive::before{background:#ef4444;}
 .status-oos{background:#fef9c3;color:#854d0e;}.status-oos::before{background:#ca8a04;}
+.status-received{background:#e0f2fe;color:#0369a1;}.status-received::before{background:#0ea5e9;}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:flex-start;justify-content:center;padding-top:4vh;overflow-y:auto;}
@@ -249,7 +250,7 @@ table tr:hover td{background:#f8fafd;}
             <select id="f-status" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;" onchange="renderOrderTable()">
               <option value="">全部狀態</option>
               <option value="draft">草稿</option><option value="pending">待確認</option>
-              <option value="confirmed">已確認</option><option value="shipping">出貨中</option><option value="done">已完成</option>
+              <option value="received">已收單</option><option value="confirmed">已確認</option><option value="shipping">出貨中</option><option value="done">已完成</option>
             </select>
             <select id="f-store" style="padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:12.5px;" onchange="renderOrderTable()">
               <option value="">全部門市</option>
@@ -267,11 +268,7 @@ table tr:hover td{background:#f8fafd;}
             全選
           </label>
           <div style="width:1px;height:22px;background:var(--border);margin:0 4px;"></div>
-          <span style="font-size:12px;color:var(--text2);">勾選後批次：</span>
-          <button class="btn btn-success btn-sm" onclick="batchAction('confirmed')">✅ 批次確認</button>
-          <button class="btn btn-sm" style="background:var(--info);color:#fff;" onclick="batchAction('shipping')">🚚 批次出貨</button>
-          <button class="btn btn-sm" style="background:#555;color:#fff;" onclick="batchAction('done')">☑ 批次完成</button>
-          <button class="btn btn-sm" style="background:var(--accent);color:#fff;" onclick="batchPrint()">🖨 批次列印出貨單</button>
+          <button class="btn btn-sm" style="background:#0ea5e9;color:#fff;" onclick="batchReceive()">📬 批次收單</button>
           <span id="batch-count" style="margin-left:auto;font-size:12px;color:var(--text3);">已選 0 張</span>
         </div>
 
@@ -333,6 +330,14 @@ table tr:hover td{background:#f8fafd;}
                       <option value="inactive">下架（季節性隱藏）</option>
                     </select>
                   </div>
+                  <div class="field form-full"><label>🚚 配送方式</label>
+                    <select id="p-delivery" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
+                      <option value="">未設定</option>
+                      <option value="direct_cash">廠商直送（收款）</option>
+                      <option value="direct_monthly">廠商直送（月結）</option>
+                      <option value="hq_monthly">總部配送（月結）</option>
+                    </select>
+                  </div>
                 </div>
                 <div class="field"><label>備註說明</label><textarea id="p-note" placeholder="保存方式、免運條件等..."></textarea></div>
                 <div style="display:flex;gap:8px;">
@@ -343,7 +348,10 @@ table tr:hover td{background:#f8fafd;}
             </div>
             <div class="card" style="overflow:hidden;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:8px;flex-wrap:wrap;">
-                <div class="card-title" style="margin:0;">品項列表</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="card-title" style="margin:0;">品項列表</div>
+                  <button class="btn btn-accent btn-sm" onclick="openBatchEdit()">✏️ 批次修改</button>
+                </div>
                 <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
                   <select id="p-filter-status" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
                     <option value="">全部狀態</option>
@@ -354,7 +362,22 @@ table tr:hover td{background:#f8fafd;}
                   <select id="p-filter-cat" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
                     <option value="">全部分類</option>
                   </select>
-                  <input type="text" id="p-search" placeholder="搜尋品名/品號" oninput="renderProdList()" style="width:130px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;">
+                  <select id="p-filter-supplier" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+                    <option value="">全部供應商</option>
+                  </select>
+                  <select id="p-filter-delivery" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+                    <option value="">全部配送</option>
+                    <option value="direct_cash">廠商直送（收款）</option>
+                    <option value="direct_monthly">廠商直送（月結）</option>
+                    <option value="hq_monthly">總部配送（月結）</option>
+                  </select>
+                  <select id="p-sort" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+                    <option value="code">排序：品號</option>
+                    <option value="name">排序：品名</option>
+                    <option value="supplier">排序：供應商</option>
+                    <option value="cat">排序：分類</option>
+                  </select>
+                  <input type="text" id="p-search" placeholder="搜尋品名/品號/供應商" oninput="renderProdList()" style="width:150px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;">
                 </div>
               </div>
               <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="prod-list"></div>
@@ -386,7 +409,10 @@ table tr:hover td{background:#f8fafd;}
               </div>
             </div>
             <div class="card">
-              <div class="card-title">分類列表</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.9rem;">
+                <div class="card-title" style="margin:0;">分類列表</div>
+                <button class="btn btn-accent btn-sm" onclick="openCatBatch()">✏️ 批次指定分類</button>
+              </div>
               <div id="cat-list"></div>
             </div>
           </div>
@@ -416,6 +442,58 @@ table tr:hover td{background:#f8fafd;}
           <button class="btn btn-outline" onclick="exportHTML()" title="將目前所有資料（訂單、帳號、品項）打包進HTML，下載備份">💾 匯出 HTML 備份檔</button>
         </div>
         <div class="card table-wrap" id="users-wrap"></div>
+      </div>
+
+      <!-- DISPATCH ORDERS -->
+      <div id="page-dispatch" class="page">
+        <div class="page-header">
+          <div class="page-title">🚚 派送訂單</div>
+          <div class="page-sub">依配送方式與供應商自動拆單，產出廠商出貨通知單</div>
+        </div>
+        <!-- 篩選列 -->
+        <div class="card" style="margin-bottom:1rem;padding:1rem;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="field">
+              <label>訂單日期（起）</label>
+              <input type="date" id="dp-from" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            </div>
+            <div class="field">
+              <label>訂單日期（迄）</label>
+              <input type="date" id="dp-to" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            </div>
+            <div class="field">
+              <label>配送方式</label>
+              <select id="dp-delivery" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+                <option value="">全部</option>
+                <option value="direct_cash">廠商直送（收款）</option>
+                <option value="direct_monthly">廠商直送（月結）</option>
+                <option value="hq_monthly">總部配送（月結）</option>
+                <option value="">未設定</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>供應商</label>
+              <select id="dp-supplier" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+                <option value="">全部供應商</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>訂單狀態</label>
+              <select id="dp-status" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+                <option value="received">已收單（待派送）</option>
+                <option value="">全部待出貨</option>
+                <option value="confirmed">已確認</option>
+                <option value="shipping">出貨中</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="applyDispatchFilters()">🔍 套用</button>
+            <button class="btn btn-outline btn-sm" onclick="resetDispatchFilters()">清除</button>
+          </div>
+        </div>
+        <!-- 統計列 -->
+        <div id="dp-summary" style="margin-bottom:1rem;"></div>
+        <!-- 派送分組 -->
+        <div id="dp-groups"></div>
       </div>
 
       <!-- NOTIFICATIONS -->
@@ -494,6 +572,55 @@ table tr:hover td{background:#f8fafd;}
   </div>
 </div>
 
+<!-- MODAL CONFIRM SHIP -->
+<div class="modal-overlay" id="modal-confirm-ship">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">🚚 確認標記出貨</div>
+      <button class="modal-close" onclick="closeM('modal-confirm-ship')">✕</button>
+    </div>
+    <div style="padding:0.5rem 0 1rem;">
+      <div style="font-size:14px;color:var(--text);margin-bottom:6px;">出貨單已產出。</div>
+      <div style="font-size:13px;color:var(--text2);">是否將本組相關訂單標記為「出貨中」並通知門市？</div>
+      <div id="cship-info" style="margin-top:10px;font-size:12px;color:var(--text3);"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeM('modal-confirm-ship')">稍後再標記</button>
+      <button class="btn btn-sm" style="background:var(--info);color:#fff;" onclick="doConfirmShip()">✅ 確認標記出貨</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAT BATCH -->
+<div class="modal-overlay" id="modal-cat-batch">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <div class="modal-title">🏷 批次指定分類</div>
+      <button class="modal-close" onclick="closeM('modal-cat-batch')">✕</button>
+    </div>
+    <div id="mcb-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeM('modal-cat-batch')">取消</button>
+      <button class="btn btn-primary" onclick="applyCatBatch()">✅ 套用分類</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BATCH EDIT -->
+<div class="modal-overlay" id="modal-batch">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-header">
+      <div class="modal-title">✏️ 批次修改品項</div>
+      <button class="modal-close" onclick="closeM('modal-batch')">✕</button>
+    </div>
+    <div id="mb-batch-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeM('modal-batch')">取消</button>
+      <button class="btn btn-primary" onclick="applyBatch()">✅ 套用變更</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -505,6 +632,7 @@ let S = {
   _editOrderId: null,
   _cartItems: [],
   _oosRemoved: [],
+  _deliveryFilter: '',
   _mobCat: '',
   users: [
     {id:'HQ',no:'00',username:'A01',password:'8888',role:'hq',sname:'總部管理',email:'',phone:'',pwAt:Date.now()},
@@ -597,29 +725,44 @@ let S = {
 // localStorage 持久化核心
 // 所有變動都存入本機，重新整理後自動還原
 // ══════════════════════════════════════════
-const LS_KEYS = { users:'derp_users', orders:'derp_orders', notifs:'derp_notifs', session:'derp_session' };
+const LS_KEYS = { users:'derp_users', products:'derp_products', orders:'derp_orders', notifs:'derp_notifs', session:'derp_session', ver:'derp_ver' };
+const APP_VER = '20260608_1'; // 每次要強制重置帳號時修改這個版本號
+const DELIVERY_OPTS = [
+  {v:'',label:'全部'},
+  {v:'direct_cash', label:'廠商直送（收款）'},
+  {v:'direct_monthly', label:'廠商直送（月結）'},
+  {v:'hq_monthly', label:'總部配送（月結）'},
+];
+const DELIVERY_LABELS = {'':'未設定','direct_cash':'廠商直送（收款）','direct_monthly':'廠商直送（月結）','hq_monthly':'總部配送（月結）'};
 
 function lsSave(){
   try{
-    localStorage.setItem(LS_KEYS.users,  JSON.stringify(S.users));
-    localStorage.setItem(LS_KEYS.orders, JSON.stringify(S.orders));
-    localStorage.setItem(LS_KEYS.notifs, JSON.stringify(S.notifs));
+    localStorage.setItem(LS_KEYS.users,    JSON.stringify(S.users));
+    localStorage.setItem(LS_KEYS.products, JSON.stringify(S.products));
+    localStorage.setItem(LS_KEYS.orders,   JSON.stringify(S.orders));
+    localStorage.setItem(LS_KEYS.notifs,   JSON.stringify(S.notifs));
   }catch(e){ console.warn('localStorage write error',e); }
 }
 
 function lsLoad(){
   try{
+    // 版本檢查：版本不符則清除舊帳號資料，強制套用新預設值
+    const storedVer=localStorage.getItem(LS_KEYS.ver);
+    if(storedVer!==APP_VER){
+      localStorage.removeItem(LS_KEYS.users);
+      localStorage.removeItem(LS_KEYS.session);
+      localStorage.setItem(LS_KEYS.ver,APP_VER);
+    }
     const su=localStorage.getItem(LS_KEYS.users);
     if(su){
       let saved=JSON.parse(su);
       if(!Array.isArray(saved)) saved=[];
-      // 合併邏輯優化：確保預設帳號存在，且更新預設的名稱與權限，但保留密碼
+      // 合併邏輯：確保預設帳號存在，更新名稱與權限，保留密碼
       S.users.forEach(def=>{
         const match = saved.find(u=>u.id===def.id);
         if(!match) {
           saved.push(def);
         } else {
-          // 更新可能變動的欄位，保留使用者自訂的密碼與更換時間
           match.username = def.username;
           match.role = def.role;
           match.sname = match.sname || def.sname;
@@ -629,6 +772,20 @@ function lsLoad(){
       S.users=saved;
     } else {
       lsSave();
+    }
+    // 商品：載入已儲存的修改，新增的預設品項補進去
+    const sp=localStorage.getItem(LS_KEYS.products);
+    if(sp){
+      try{
+        const savedProds=JSON.parse(sp);
+        if(Array.isArray(savedProds)&&savedProds.length>0){
+          // 把原始預設品項中不存在於已儲存版本的品項補進去
+          S.products.forEach(def=>{
+            if(!savedProds.find(p=>p.id===def.id)) savedProds.push(def);
+          });
+          S.products=savedProds;
+        }
+      }catch(e){ /* 保留預設 */ }
     }
     const so=localStorage.getItem(LS_KEYS.orders);
     if(so) { try{ S.orders=JSON.parse(so); }catch(e){S.orders=[];} }
@@ -671,6 +828,11 @@ function populateCatFilter(){
   const sel=document.getElementById('p-filter-cat');if(!sel)return;
   const cats=getCats().sort((a,b)=>a.order-b.order);
   sel.innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+}
+function populateSupplierFilter(){
+  const sel=document.getElementById('p-filter-supplier');if(!sel)return;
+  const sups=[...new Set(S.products.map(p=>p.supplier).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">全部供應商</option>'+sups.map(s=>`<option value="${s}">${s}</option>`).join('');
 }
 
 let _editCatName=null;
@@ -768,6 +930,7 @@ let _hqoStore=null;
 function renderHQOrder(){
   _hqoStore=null;
   S._cartItems=[];
+  S._deliveryFilter='';
   const stores=S.users.filter(u=>u.role==='store');
   document.getElementById('hqo-desktop').innerHTML=`
     <div class="card" style="margin-bottom:1rem;padding:1rem;">
@@ -793,6 +956,10 @@ function startHQOrder(){
       <div style="flex:1;">
         <div class="card" style="margin-bottom:1rem;">
           <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;">代訂門市：${_hqoStore.sname}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">🚚 配送方式</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
+            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${S._deliveryFilter===o.v?' active':o.v===''&&S._deliveryFilter===''?' active':''}" onclick="setHQODelivery('${o.v}',this)">${o.label}</button>`).join('')}
+          </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" id="hqo-q" placeholder="搜尋品名/品號..." oninput="renderHQOGrid()" style="flex:1;min-width:160px;padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;">
             <select id="hqo-cat" onchange="renderHQOGrid()" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
@@ -821,6 +988,7 @@ function renderHQOGrid(){
   const q=(document.getElementById('hqo-q')?.value||'').toLowerCase();
   const cat=document.getElementById('hqo-cat')?.value||'';
   let prods=S.products.filter(p=>p.pstatus!=='inactive');
+  if(S._deliveryFilter) prods=prods.filter(p=>(p.delivery||'')===S._deliveryFilter);
   if(q) prods=prods.filter(p=>p.name.includes(q)||p.code.includes(q));
   if(cat) prods=prods.filter(p=>p.cat===cat);
   document.getElementById('hqo-grid').innerHTML=`
@@ -996,6 +1164,7 @@ function buildSidebar(){
     h+=`<div class="nav-sec">總部管理</div>`;
     h+=ni('dashboard','📊','儀表板');
     h+=ni('orders','📦','訂單管理',unreadCnt());
+    h+=ni('dispatch','🚚','派送訂單',receivedCnt());
     h+=ni('hq-order','🛒','幫門市下單');
     h+=`<div class="nav-sec">設定</div>`;
     h+=ni('products','🗂','物料管理');
@@ -1007,6 +1176,7 @@ function buildSidebar(){
     h+=`<div class="nav-sec">管理員功能</div>`;
     h+=ni('dashboard','📊','儀表板');
     h+=ni('orders','📦','訂單管理',unreadCnt());
+    h+=ni('dispatch','🚚','派送訂單',receivedCnt());
     h+=ni('hq-order','🛒','幫門市下單');
     h+=`<div class="nav-sec">設定</div>`;
     h+=ni('products','🗂','物料管理');
@@ -1034,13 +1204,17 @@ function unreadCnt(){
   const n=S.notifs.filter(n=>!n.read&&(isHQAny()||(n.sid===S.user.id))).length;
   return n||'';
 }
+function receivedCnt(){
+  const n=S.orders.filter(o=>o.status==='received').length;
+  return n||'';
+}
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id)?.classList.add('active');
   document.getElementById('nav-'+id)?.classList.add('active');
   ({dashboard:renderDash,orders:renderOrders,'store-order':renderStoreOrder,'my-orders':renderMyOrders,
-    'hq-order':renderHQOrder,
+    'hq-order':renderHQOrder,dispatch:renderDispatch,
     products:renderProds,accounts:renderAccounts,stock:renderStock,users:renderUsers,notifications:renderNotifs})[id]?.();
 }
 function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
@@ -1101,9 +1275,7 @@ function renderOrderTable(){
       <td><div style="display:flex;gap:4px;flex-wrap:wrap;">
         <button class="btn btn-outline btn-sm" onclick="viewOrder('${o.id}')">查看</button>
         <button class="btn btn-outline btn-sm" onclick="hqEdit('${o.id}')">編輯</button>
-        ${o.status==='pending'?`<button class="btn btn-success btn-sm" onclick="confirmOrd('${o.id}')">確認</button>`:''}
-        ${o.status==='confirmed'?`<button class="btn btn-sm" style="background:var(--info);color:#fff;" onclick="shipOrd('${o.id}')">出貨</button>`:''}
-        ${o.status==='shipping'?`<button class="btn btn-sm" style="background:#555;color:#fff;" onclick="doneOrd('${o.id}')">完成</button>`:''}
+        ${o.status==='pending'?`<button class="btn btn-sm" style="background:#0ea5e9;color:#fff;" onclick="receivedOrd('${o.id}')">📬 收單</button>`:''}
         <button class="btn btn-sm" style="background:var(--accent);color:#fff;" onclick="printOne('${o.id}')">🖨</button>
       </div></td>
     </tr>`).join('')}</tbody></table>
@@ -1131,7 +1303,7 @@ function batchAction(newStatus){
   const ids=getCheckedIds();
   if(!ids.length){toast('請先勾選訂單','danger');return;}
   const stMap={confirmed:'已確認',shipping:'出貨中',done:'已完成'};
-  const prevMap={confirmed:'pending',shipping:'confirmed',done:'shipping'};
+  const prevMap={confirmed:'received',shipping:'confirmed',done:'shipping'};
   const ok=ids.filter(id=>{const o=S.orders.find(x=>x.id===id);return o&&o.status===prevMap[newStatus];});
   if(!ok.length){toast(`無符合條件的訂單可執行此操作\n（需為：${({confirmed:'待確認',shipping:'已確認',done:'出貨中'})[newStatus]}狀態）`,'danger');return;}
   ok.forEach(id=>{
@@ -1151,7 +1323,25 @@ function batchPrint(){
   const ords=ids.map(id=>S.orders.find(o=>o.id===id)).filter(Boolean);
   openPrintWin(buildPrint(ords));
 }
-function stBadge(s){const m={draft:'草稿',pending:'待確認',confirmed:'已確認',shipping:'出貨中',done:'已完成'};return`<span class="status status-${s}">${m[s]||s}</span>`;}
+function batchReceive(){
+  const ids=getCheckedIds();
+  if(!ids.length){toast('請先勾選訂單','danger');return;}
+  const ok=ids.filter(id=>{const o=S.orders.find(x=>x.id===id);return o&&o.status==='pending';});
+  if(!ok.length){toast('勾選的訂單中沒有待確認的訂單','danger');return;}
+  ok.forEach(id=>{
+    const o=S.orders.find(x=>x.id===id);
+    o.status='received';o.receivedAt=new Date().toLocaleString('zh-TW');o.receivedBy=S.user.username;
+    addNotif('receive','📬 訂單已收單',`訂單 ${o.id} 已收單，進入派送流程`,o.sid);
+  });
+  saveAll();renderOrderTable();buildSidebar();toast(`${ok.length} 張訂單已批次收單`,'success');
+}
+function stBadge(s){const m={draft:'草稿',pending:'待確認',received:'已收單',confirmed:'已確認',shipping:'出貨中',done:'已完成'};return`<span class="status status-${s}">${m[s]||s}</span>`;}
+function receivedOrd(id){
+  const o=S.orders.find(x=>x.id===id);if(!o)return;
+  o.status='received';o.receivedAt=new Date().toLocaleString('zh-TW');o.receivedBy=S.user.username;
+  addNotif('receive','📬 訂單已收單',`訂單 ${o.id} 已由 ${S.user.username} 收單，進入派送流程`,o.sid);
+  saveAll();renderOrderTable();buildSidebar();toast(`${o.id} 已收單`,'success');
+}
 function confirmOrd(id){
   const o=S.orders.find(x=>x.id===id);
   o.status='confirmed';o.confirmedBy=S.user.username;o.confirmedAt=new Date().toLocaleString('zh-TW');
@@ -1454,7 +1644,7 @@ ${pages}
 function openPrintWin(h){const w=window.open('','_blank','width=960,height=800');w.document.write(h);w.document.close();}
 
 // ── STORE ORDER ──
-function renderStoreOrder(){S._cartItems=[];isMob()?renderMobOrder():renderDesktopOrder();}
+function renderStoreOrder(){S._cartItems=[];S._deliveryFilter='';isMob()?renderMobOrder():renderDesktopOrder();}
 
 // Desktop order
 function renderDesktopOrder(){
@@ -1464,6 +1654,10 @@ function renderDesktopOrder(){
     <div style="display:flex;gap:1rem;align-items:start;">
       <div style="flex:1;">
         <div class="card" style="margin-bottom:1rem;">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">🚚 配送方式</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;" id="so-del-tabs">
+            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${(S._deliveryFilter||'')===(o.v||'')&&o.v===''?' active':S._deliveryFilter===o.v?' active':''}" onclick="setSODelivery('${o.v}',this)">${o.label}</button>`).join('')}
+          </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;">
             <input type="text" id="so-q" placeholder="搜尋品名/品號..." oninput="renderDesktopGrid()" style="flex:1;min-width:180px;padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;">
             <select id="so-cat" onchange="renderDesktopGrid()" style="padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
@@ -1494,6 +1688,7 @@ function renderDesktopGrid(){
   const q=(document.getElementById('so-q')?.value||'').toLowerCase();
   const cat=document.getElementById('so-cat')?.value||'';
   let prods=S.products.filter(p=>(p.pstatus||'active')!=='inactive');
+  if(S._deliveryFilter) prods=prods.filter(p=>(p.delivery||'')===S._deliveryFilter);
   if(q) prods=prods.filter(p=>p.name.includes(q)||p.code.includes(q));
   if(cat) prods=prods.filter(p=>p.cat===cat);
   document.getElementById('so-grid').innerHTML=`
@@ -1555,6 +1750,9 @@ function renderMobOrder(){
   document.getElementById('so-desktop').innerHTML='';
   const cats=[...new Set(S.products.filter(p=>(p.pstatus||'active')!=='inactive').map(p=>p.cat))].sort();
   document.getElementById('so-mobile').innerHTML=`
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
+      ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${S._deliveryFilter===o.v?' active':o.v===''&&S._deliveryFilter===''?' active':''}" onclick="setSODelivery('${o.v}',this)">${o.label}</button>`).join('')}
+    </div>
     <input class="mob-search" type="text" id="mob-q" placeholder="搜尋品名/品號..." oninput="renderMobList()">
     <div class="mob-cat-scroll" id="mob-cats">
       <div class="cat-chip active" onclick="setMobCat('',this)">全部</div>
@@ -1569,6 +1767,19 @@ function renderMobOrder(){
   S._mobCat='';
   renderMobList();
 }
+function setSODelivery(v,el){
+  S._deliveryFilter=v;
+  document.querySelectorAll('#so-del-tabs .cat-chip').forEach(x=>x.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(document.getElementById('so-grid')) renderDesktopGrid();
+  else renderMobList();
+}
+function setHQODelivery(v,el){
+  S._deliveryFilter=v;
+  document.querySelectorAll('[onclick^="setHQODelivery"]').forEach(x=>x.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderHQOGrid();
+}
 function setMobCat(c,el){
   S._mobCat=c;
   document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active'));
@@ -1577,6 +1788,7 @@ function setMobCat(c,el){
 function renderMobList(){
   const q=(document.getElementById('mob-q')?.value||'').toLowerCase();
   let prods=S.products.filter(p=>(p.pstatus||'active')!=='inactive');
+  if(S._deliveryFilter) prods=prods.filter(p=>(p.delivery||'')===S._deliveryFilter);
   if(S._mobCat) prods=prods.filter(p=>p.cat===S._mobCat);
   if(q) prods=prods.filter(p=>p.name.includes(q)||p.code.includes(q));
   const seenCat={};let h='';
@@ -1688,33 +1900,47 @@ function renderMyOrders(){
 
 // PRODUCTS
 function renderProds(){
-  // 初始化分類/單位下拉選單
   populateCatSelect('p-cat');
   populateUnitSelect('p-unit');
   populateCatFilter();
+  populateSupplierFilter();
   switchProdTab('items');
 }
 function renderProdList(){
   const q=(document.getElementById('p-search')?.value||'').toLowerCase();
   const fStatus=document.getElementById('p-filter-status')?.value||'';
   const fCat=document.getElementById('p-filter-cat')?.value||'';
-  let prods=S.products;
-  if(q) prods=prods.filter(p=>p.name.includes(q)||p.code.includes(q)||p.cat.includes(q));
+  const fSup=document.getElementById('p-filter-supplier')?.value||'';
+  const fDel=document.getElementById('p-filter-delivery')?.value||'';
+  const sortBy=document.getElementById('p-sort')?.value||'code';
+  let prods=[...S.products];
+  if(q) prods=prods.filter(p=>p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)||(p.supplier||'').toLowerCase().includes(q));
   if(fStatus) prods=prods.filter(p=>(p.pstatus||'active')===fStatus);
   if(fCat) prods=prods.filter(p=>p.cat===fCat);
+  if(fSup) prods=prods.filter(p=>(p.supplier||'')===fSup);
+  if(fDel) prods=prods.filter(p=>(p.delivery||'')===fDel);
+  prods.sort((a,b)=>{
+    const av=sortBy==='code'?a.code:sortBy==='name'?a.name:sortBy==='supplier'?(a.supplier||''):a.cat;
+    const bv=sortBy==='code'?b.code:sortBy==='name'?b.name:sortBy==='supplier'?(b.supplier||''):b.cat;
+    return av.localeCompare(bv,'zh-TW',{numeric:true});
+  });
   const showCost=canSeeCost();
   const pstatusLabel={active:'<span class="status status-confirmed">上架中</span>',oos:'<span class="status status-pending">缺貨</span>',inactive:'<span class="status status-inactive">已下架</span>'};
+  const delBadge=(d)=>d?`<span style="background:${d==='hq_monthly'?'var(--info-bg)':d==='direct_monthly'?'var(--success-bg)':'var(--surface2)'};color:${d==='hq_monthly'?'var(--info)':d==='direct_monthly'?'var(--success)':'var(--text2)'};padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">${DELIVERY_LABELS[d]||''}</span>`:'<span style="color:var(--text3);font-size:10.5px;">未設定</span>';
   document.getElementById('prod-list').innerHTML=`
-    <table style="min-width:700px;"><thead><tr>
-      <th>品號</th><th>品名</th><th>分類</th><th>單位</th>
+    <div style="font-size:11.5px;color:var(--text3);padding:4px 2px 6px;">共 ${prods.length} 筆</div>
+    <table style="min-width:900px;"><thead><tr>
+      <th>品號</th><th>品名</th><th>供應商</th><th>分類</th><th>配送方式</th><th>單位</th>
       ${showCost?'<th>🔒成本</th>':''}
       <th>售價</th><th>庫存</th><th>狀態</th><th>操作</th>
     </tr></thead>
-    <tbody>${prods.map(p=>`<tr style="${(p.pstatus||'active')==='inactive'?'opacity:0.55;':''}">
+    <tbody>${prods.map(p=>`<tr style="${(p.pstatus||'active')==='inactive'?'opacity:0.55;':''}" onclick="void(0)">
       <td style="font-family:monospace;font-size:11.5px;color:var(--info);">${p.code}</td>
-      <td style="max-width:130px;font-size:12.5px;">${p.name}<div style="font-size:10.5px;color:var(--text3);">${p.spec||''}</div></td>
+      <td style="max-width:140px;font-size:12.5px;">${p.name}<div style="font-size:10.5px;color:var(--text3);">${p.spec||''}</div></td>
+      <td style="font-size:12px;color:var(--text2);white-space:nowrap;">${p.supplier||'—'}</td>
       <td><span class="tag">${p.cat}</span></td>
-      <td>${p.unit}</td>
+      <td style="white-space:nowrap;">${delBadge(p.delivery||'')}</td>
+      <td style="font-size:12px;">${p.unit}</td>
       ${showCost?`<td style="color:var(--danger);font-size:12px;">$${p.cost.toLocaleString()}</td>`:''}
       <td style="font-weight:700;font-size:12px;">$${p.price.toLocaleString()}</td>
       <td style="${p.stock<=p.swarn?'color:var(--danger);font-weight:700;':''}">
@@ -1744,6 +1970,7 @@ function saveProd(){
     swarn:parseInt(document.getElementById('p-swarn').value)||5,
     note:document.getElementById('p-note').value,
     pstatus:document.getElementById('p-pstatus')?.value||'active',
+    delivery:document.getElementById('p-delivery')?.value||'',
   };
   if(S._editProdId){const idx=S.products.findIndex(x=>x.id===S._editProdId);if(idx>=0)S.products[idx]=p;else S.products.push(p);}
   else S.products.push(p);
@@ -1766,6 +1993,7 @@ function loadProd(id){
   document.getElementById('p-swarn').value=p.swarn;
   document.getElementById('p-note').value=p.note||'';
   const psel=document.getElementById('p-pstatus');if(psel) psel.value=p.pstatus||'active';
+  const dsel=document.getElementById('p-delivery');if(dsel) dsel.value=p.delivery||'';
   // 捲動到表單頂部
   document.getElementById('prod-form-title').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1780,6 +2008,7 @@ function resetProdForm(){
   populateCatSelect('p-cat');
   populateUnitSelect('p-unit');
   const psel=document.getElementById('p-pstatus');if(psel) psel.value='active';
+  const dsel=document.getElementById('p-delivery');if(dsel) dsel.value='';
 }
 
 // ACCOUNTS — 完整帳款管理模組
@@ -1860,13 +2089,247 @@ function renderAccounts(){
     <!-- 統計報表顯示區 -->
     <div id="acc-report" style="margin-bottom:1rem;"></div>
 
+    <!-- 應收帳款 -->
+    <div class="card" style="margin-bottom:1rem;">
+      <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:10px;">💰 應收帳款（月結品項）</div>
+      <div id="acc-receivable"></div>
+    </div>
+
     <!-- 帳款總表 -->
     <div class="card">
       <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-bottom:10px;">帳款總表</div>
       <div class="table-wrap" id="acc-table"></div>
     </div>
   `;
+  renderReceivable();
   applyAccFilters();
+}
+
+function renderReceivable(){
+  const el=document.getElementById('acc-receivable');if(!el)return;
+  const stores=S.users.filter(u=>u.role==='store');
+  // 建立 productId → delivery 的快速查找
+  const prodDel={};
+  S.products.forEach(p=>{ prodDel[p.id]=p.delivery||''; });
+  // 計算各門市的月結應收金額
+  const rows=[];
+  stores.forEach(s=>{
+    const storeOrds=S.orders.filter(o=>o.sid===s.id&&['pending','confirmed','shipping','done'].includes(o.status));
+    let directMonthly=0, hqMonthly=0;
+    storeOrds.forEach(o=>{
+      o.items.forEach(i=>{
+        const del=prodDel[i.pid]||prodDel[i.code]||'';
+        const amt=i.qty*i.price;
+        if(del==='direct_monthly') directMonthly+=amt;
+        if(del==='hq_monthly') hqMonthly+=amt;
+      });
+    });
+    if(directMonthly>0||hqMonthly>0){
+      rows.push({sname:s.sname,directMonthly,hqMonthly,total:directMonthly+hqMonthly});
+    }
+  });
+  if(!rows.length){
+    el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0;">目前無月結應收帳款（請先在物料管理設定商品的配送方式）</div>';
+    return;
+  }
+  const totalDM=rows.reduce((s,r)=>s+r.directMonthly,0);
+  const totalHQ=rows.reduce((s,r)=>s+r.hqMonthly,0);
+  el.innerHTML=`
+    <table style="min-width:500px;"><thead><tr>
+      <th>門市</th>
+      <th>廠商直送（月結）</th>
+      <th>總部配送（月結）</th>
+      <th>合計</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td style="font-weight:700;">${r.sname}</td>
+      <td style="color:var(--success);font-weight:700;">${r.directMonthly>0?'$'+r.directMonthly.toLocaleString():'—'}</td>
+      <td style="color:var(--info);font-weight:700;">${r.hqMonthly>0?'$'+r.hqMonthly.toLocaleString():'—'}</td>
+      <td style="font-weight:700;color:var(--primary);">$${r.total.toLocaleString()}</td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr>
+      <td style="font-weight:700;">合計</td>
+      <td style="font-weight:700;color:var(--success);">$${totalDM.toLocaleString()}</td>
+      <td style="font-weight:700;color:var(--info);">$${totalHQ.toLocaleString()}</td>
+      <td style="font-weight:700;color:var(--primary);">$${(totalDM+totalHQ).toLocaleString()}</td>
+    </tr></tfoot></table>
+  `;
+}
+// ══ 分類批次指定 ══
+function openCatBatch(){
+  const cats=getCats().sort((a,b)=>a.order-b.order);
+  const sups=[...new Set(S.products.map(p=>p.supplier).filter(Boolean))].sort();
+  document.getElementById('mcb-body').innerHTML=`
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;">🏷 Step 1：選擇要套用的目標分類</div>
+      <select id="mcb-cat" style="width:100%;padding:9px 12px;border:1.5px solid var(--primary);border-radius:8px;font-size:14px;font-family:inherit;font-weight:700;">
+        ${cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}
+      </select>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border-light);margin:0.9rem 0;">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);">📦 Step 2：選擇要重新指定的品項</div>
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+          <select id="mcb-filter-sup" onchange="renderCBPL()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+            <option value="">全部供應商</option>
+            ${sups.map(s=>`<option value="${s}">${s}</option>`).join('')}
+          </select>
+          <select id="mcb-filter-cat" onchange="renderCBPL()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+            <option value="">全部現有分類</option>
+            ${cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}
+          </select>
+          <input type="text" id="mcb-search" placeholder="搜尋品名/品號" oninput="renderCBPL()" style="padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;width:130px;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;">
+            <input type="checkbox" id="mcb-all" onchange="mcbSelAll(this.checked)"> 全選
+          </label>
+          <span id="mcb-cnt" style="font-size:12px;color:var(--text3);">已選 0</span>
+        </div>
+      </div>
+      <div id="mcb-prod-list" style="max-height:320px;overflow-y:auto;border:1.5px solid var(--border-light);border-radius:8px;"></div>
+    </div>
+  `;
+  renderCBPL();
+  openM('modal-cat-batch');
+}
+function renderCBPL(){
+  const q=(document.getElementById('mcb-search')?.value||'').toLowerCase();
+  const fSup=document.getElementById('mcb-filter-sup')?.value||'';
+  const fCat=document.getElementById('mcb-filter-cat')?.value||'';
+  let prods=[...S.products];
+  if(q) prods=prods.filter(p=>p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q));
+  if(fSup) prods=prods.filter(p=>(p.supplier||'')===fSup);
+  if(fCat) prods=prods.filter(p=>p.cat===fCat);
+  prods.sort((a,b)=>a.code.localeCompare(b.code,'zh-TW',{numeric:true}));
+  document.getElementById('mcb-prod-list').innerHTML=prods.map(p=>`
+    <label style="display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border-light);" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <input type="checkbox" class="mcb-chk" value="${p.id}" onchange="mcbUpdCnt()">
+      <span style="font-family:monospace;font-size:11px;color:var(--info);min-width:32px;">${p.code}</span>
+      <span style="flex:1;font-size:12.5px;font-weight:600;">${p.name}</span>
+      <span style="font-size:11.5px;color:var(--text2);white-space:nowrap;">${p.supplier||''}</span>
+      <span class="tag" style="font-size:11px;white-space:nowrap;">${p.cat}</span>
+    </label>
+  `).join('');
+  mcbUpdCnt();
+}
+function mcbSelAll(v){document.querySelectorAll('.mcb-chk').forEach(c=>c.checked=v);mcbUpdCnt();}
+function mcbUpdCnt(){
+  const n=document.querySelectorAll('.mcb-chk:checked').length;
+  const total=document.querySelectorAll('.mcb-chk').length;
+  const cnt=document.getElementById('mcb-cnt');if(cnt) cnt.textContent=`已選 ${n}`;
+  const all=document.getElementById('mcb-all');
+  if(all){all.indeterminate=n>0&&n<total;all.checked=n===total&&total>0;}
+}
+function applyCatBatch(){
+  const ids=[...document.querySelectorAll('.mcb-chk:checked')].map(c=>c.value);
+  if(!ids.length){toast('請勾選要套用的品項','danger');return;}
+  const cat=document.getElementById('mcb-cat')?.value;
+  if(!cat){toast('請選擇目標分類','danger');return;}
+  let cnt=0;
+  ids.forEach(id=>{
+    const idx=S.products.findIndex(p=>p.id===id);
+    if(idx>=0){S.products[idx].cat=cat;cnt++;}
+  });
+  saveAll();closeM('modal-cat-batch');renderProdList();renderCatList();
+  toast(`✅ 已將 ${cnt} 個品項指定為「${cat}」`,'success');
+}
+
+// ══ 批次修改 ══
+function openBatchEdit(){
+  const cats=getCats().sort((a,b)=>a.order-b.order);
+  document.getElementById('mb-batch-body').innerHTML=`
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;">📋 Step 1：選擇要修改的欄位（可複選）</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        ${[
+          ['bf-cat','分類','select',cats.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')],
+          ['bf-sup','供應商','text',''],
+          ['bf-stock','庫存數量','number',''],
+          ['bf-swarn','最低預警值','number',''],
+          ['bf-ps','商品狀態','select',`<option value="active">上架中</option><option value="oos">缺貨（可見不可下單）</option><option value="inactive">已下架</option>`],
+          ['bf-del','配送方式','select',`<option value="">未設定</option><option value="direct_cash">廠商直送（收款）</option><option value="direct_monthly">廠商直送（月結）</option><option value="hq_monthly">總部配送（月結）</option>`],
+        ].map(([id,lbl,type,opts])=>`
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;" id="${id}-row">
+            <input type="checkbox" id="${id}-chk" onchange="toggleBF('${id}-val',this.checked,'${id}-row')">
+            <span style="font-size:12.5px;font-weight:700;min-width:72px;color:var(--text2);">${lbl}</span>
+            ${type==='select'
+              ?`<select id="${id}-val" disabled style="flex:1;padding:5px 7px;border:1.5px solid var(--border);border-radius:6px;font-size:12.5px;font-family:inherit;opacity:0.35;transition:opacity 0.15s;">${opts}</select>`
+              :`<input type="${type}" id="${id}-val" disabled min="0" placeholder="${type==='number'?'0':'輸入...'}" style="flex:1;padding:5px 7px;border:1.5px solid var(--border);border-radius:6px;font-size:12.5px;font-family:inherit;opacity:0.35;transition:opacity 0.15s;">`
+            }
+          </label>`).join('')}
+      </div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border-light);margin:1rem 0 0.9rem;">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);">📦 Step 2：勾選要套用的品項</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="bf-search" placeholder="搜尋品名/品號/分類" oninput="renderBPL()" style="padding:5px 9px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;outline:none;width:150px;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;">
+            <input type="checkbox" id="bf-all" onchange="bfSelAll(this.checked)"> 全選
+          </label>
+          <span id="bf-cnt" style="font-size:12px;color:var(--text3);">已選 0 項</span>
+        </div>
+      </div>
+      <div id="bf-prod-list" style="max-height:300px;overflow-y:auto;border:1.5px solid var(--border-light);border-radius:8px;"></div>
+    </div>
+  `;
+  renderBPL();
+  openM('modal-batch');
+}
+function toggleBF(fieldId,on,rowId){
+  const el=document.getElementById(fieldId);if(!el)return;
+  el.disabled=!on;el.style.opacity=on?'1':'0.35';
+  const row=document.getElementById(rowId);
+  if(row) row.style.borderColor=on?'var(--primary)':'var(--border)';
+}
+function renderBPL(){
+  const q=(document.getElementById('bf-search')?.value||'').toLowerCase();
+  let prods=S.products;
+  if(q) prods=prods.filter(p=>p.name.includes(q)||p.code.includes(q)||p.cat.includes(q)||((p.supplier||'').toLowerCase().includes(q)));
+  document.getElementById('bf-prod-list').innerHTML=prods.map(p=>`
+    <label style="display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border-light);" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <input type="checkbox" class="bfi-chk" value="${p.id}" onchange="bfUpdCnt()">
+      <span style="font-family:monospace;font-size:11px;color:var(--info);min-width:32px;">${p.code}</span>
+      <span style="flex:1;font-size:12.5px;font-weight:600;">${p.name}</span>
+      <span class="tag" style="font-size:11px;">${p.cat}</span>
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap;">${p.supplier||''}</span>
+      <span style="font-size:11px;color:var(--text3);white-space:nowrap;">${DELIVERY_LABELS[p.delivery||'']||'未設定'}</span>
+    </label>
+  `).join('');
+  bfUpdCnt();
+}
+function bfSelAll(v){
+  document.querySelectorAll('.bfi-chk').forEach(c=>c.checked=v);
+  bfUpdCnt();
+}
+function bfUpdCnt(){
+  const n=document.querySelectorAll('.bfi-chk:checked').length;
+  const total=document.querySelectorAll('.bfi-chk').length;
+  const cnt=document.getElementById('bf-cnt');if(cnt) cnt.textContent=`已選 ${n} 項`;
+  const all=document.getElementById('bf-all');
+  if(all){all.indeterminate=n>0&&n<total;all.checked=n===total&&total>0;}
+}
+function applyBatch(){
+  const ids=[...document.querySelectorAll('.bfi-chk:checked')].map(c=>c.value);
+  if(!ids.length){toast('請勾選要套用的品項','danger');return;}
+  const changes={};
+  if(document.getElementById('bf-cat-chk')?.checked) changes.cat=document.getElementById('bf-cat-val')?.value;
+  if(document.getElementById('bf-sup-chk')?.checked) changes.supplier=document.getElementById('bf-sup-val')?.value;
+  if(document.getElementById('bf-stock-chk')?.checked) changes.stock=parseInt(document.getElementById('bf-stock-val')?.value)||0;
+  if(document.getElementById('bf-swarn-chk')?.checked) changes.swarn=parseInt(document.getElementById('bf-swarn-val')?.value)||0;
+  if(document.getElementById('bf-ps-chk')?.checked) changes.pstatus=document.getElementById('bf-ps-val')?.value;
+  if(document.getElementById('bf-del-chk')?.checked) changes.delivery=document.getElementById('bf-del-val')?.value;
+  if(!Object.keys(changes).length){toast('請勾選至少一個要修改的欄位','danger');return;}
+  let count=0;
+  ids.forEach(id=>{
+    const idx=S.products.findIndex(p=>p.id===id);
+    if(idx>=0){Object.assign(S.products[idx],changes);count++;}
+  });
+  saveAll();
+  closeM('modal-batch');
+  renderProdList();
+  toast(`✅ 已批次更新 ${count} 個品項`,'success');
 }
 
 function saveRptOpts(){
@@ -2134,6 +2597,249 @@ function previewOneBill(sid,ordId){
   <script>window.onload=()=>window.print()<\/script></body></html>`);
 }
 
+// ══ 派送訂單 ══
+function renderDispatch(){
+  // 填充供應商下拉
+  const sups=[...new Set(S.products.map(p=>p.supplier).filter(Boolean))].sort();
+  const supSel=document.getElementById('dp-supplier');
+  if(supSel&&supSel.options.length<=1){
+    sups.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;supSel.appendChild(o);});
+  }
+  // 預設日期（今天）
+  const today=new Date().toISOString().slice(0,10);
+  const dpFrom=document.getElementById('dp-from');
+  const dpTo=document.getElementById('dp-to');
+  if(dpFrom&&!dpFrom.value) dpFrom.value=today;
+  if(dpTo&&!dpTo.value) dpTo.value=today;
+  applyDispatchFilters();
+}
+function resetDispatchFilters(){
+  ['dp-from','dp-to'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['dp-delivery','dp-supplier'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const dpStatus=document.getElementById('dp-status');if(dpStatus) dpStatus.value='received';
+  applyDispatchFilters();
+}
+function applyDispatchFilters(){
+  const from=document.getElementById('dp-from')?.value||'';
+  const to=document.getElementById('dp-to')?.value||'';
+  const delFilter=document.getElementById('dp-delivery')?.value||'';
+  const supFilter=document.getElementById('dp-supplier')?.value||'';
+  const stFilter=document.getElementById('dp-status')?.value||'received';
+
+  let orders=S.orders.filter(o=>{
+    if(stFilter===''){
+      if(!['received','confirmed','shipping'].includes(o.status)) return false;
+    } else {
+      if(o.status!==stFilter) return false;
+    }
+    if(from&&o.date<from) return false;
+    if(to&&o.date>to) return false;
+    return true;
+  });
+
+  // 建立 productId → product 映射
+  const prodMap={};S.products.forEach(p=>{prodMap[p.id]=p;prodMap[p.code]=p;});
+
+  // 先按 delivery+supplier 篩選訂單品項
+  if(delFilter||supFilter){
+    orders=orders.filter(o=>o.items.some(i=>{
+      const p=prodMap[i.pid]||prodMap[i.code]||{};
+      if(delFilter&&(p.delivery||'')!==delFilter) return false;
+      if(supFilter&&(p.supplier||'')!==supFilter) return false;
+      return true;
+    }));
+  }
+
+  const groups=buildDispatchGroups(orders,prodMap,delFilter,supFilter);
+
+  // 統計列
+  const sumEl=document.getElementById('dp-summary');
+  if(sumEl){
+    const totalOrd=new Set(Object.values(groups).flatMap(g=>g.orderIds)).size;
+    const totalGroups=Object.keys(groups).length;
+    sumEl.innerHTML=totalGroups===0?'':`
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <div class="stat-card" style="min-width:120px;"><div class="stat-label">涵蓋訂單</div><div class="stat-value">${totalOrd}</div></div>
+        <div class="stat-card" style="min-width:120px;"><div class="stat-label">派送分組</div><div class="stat-value">${totalGroups}</div></div>
+      </div>`;
+  }
+
+  // 渲染分組卡片
+  const grpEl=document.getElementById('dp-groups');
+  if(!grpEl) return;
+  if(!Object.keys(groups).length){
+    grpEl.innerHTML=`<div class="card" style="text-align:center;padding:2rem;color:var(--text3);">目前沒有符合條件的訂單</div>`;
+    return;
+  }
+  grpEl.innerHTML=Object.entries(groups).map(([key,g])=>{
+    const delLabel=DELIVERY_LABELS[g.delivery]||'未設定';
+    const delColor=g.delivery==='hq_monthly'?'var(--info)':g.delivery==='direct_monthly'?'var(--success)':'var(--text2)';
+    const itemRows=Object.values(g.items).map(i=>`
+      <tr>
+        <td style="font-family:monospace;font-size:11.5px;color:var(--info);">${i.code}</td>
+        <td style="font-weight:600;font-size:12.5px;">${i.name}</td>
+        <td style="font-size:11.5px;color:var(--text3);">${i.spec||''}</td>
+        <td style="text-align:center;">${i.unit}</td>
+        <td style="text-align:center;font-weight:700;font-size:14px;color:var(--primary);">${i.totalQty}</td>
+        <td style="font-size:11.5px;color:var(--text2);">${Object.entries(i.stores).map(([s,q])=>`${s}×${q}`).join('、')}</td>
+      </tr>`).join('');
+    const orderIdList=[...g.orderIds].join(',');
+    return`<div class="card" style="margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--primary);">🏭 ${g.supplier||'未知供應商'}</div>
+          <div style="display:flex;gap:8px;margin-top:4px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:700;color:${delColor};background:var(--surface2);padding:2px 9px;border-radius:20px;">${delLabel}</span>
+            <span style="font-size:12px;color:var(--text2);">共 ${g.orderIds.size} 筆訂單 ｜ ${[...g.storeNames].join('、')}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="printDispatchGroup('${encodeURIComponent(key)}')">🖨 出貨單 PDF</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:600px;"><thead><tr>
+          <th>品號</th><th>品名</th><th>規格</th><th style="text-align:center;">單位</th>
+          <th style="text-align:center;">總數量</th><th>門市明細</th>
+        </tr></thead><tbody>${itemRows}</tbody></table>
+      </div>
+    </div>`;
+  }).join('');
+  // 存 groups 供 PDF 用
+  window._dispatchGroups=groups;
+}
+function buildDispatchGroups(orders,prodMap,delFilter,supFilter){
+  const groups={};
+  orders.forEach(o=>{
+    o.items.forEach(i=>{
+      const p=prodMap[i.pid]||prodMap[i.code]||{};
+      const delivery=p.delivery||'';
+      const supplier=p.supplier||i.supplier||'未知供應商';
+      if(delFilter&&delivery!==delFilter) return;
+      if(supFilter&&supplier!==supFilter) return;
+      const key=`${supplier}||${delivery}`;
+      if(!groups[key]) groups[key]={supplier,delivery,items:{},orderIds:new Set(),storeNames:new Set()};
+      groups[key].orderIds.add(o.id);
+      groups[key].storeNames.add(o.sname);
+      const itemKey=i.pid||i.code;
+      if(!groups[key].items[itemKey]){
+        groups[key].items[itemKey]={code:i.code,name:i.name,spec:i.spec||'',unit:i.unit,totalQty:0,stores:{}};
+      }
+      groups[key].items[itemKey].totalQty+=i.qty;
+      groups[key].items[itemKey].stores[o.sname]=(groups[key].items[itemKey].stores[o.sname]||0)+i.qty;
+    });
+  });
+  return groups;
+}
+let _pendingShipIds=[];
+function printDispatchGroup(encodedKey){
+  const key=decodeURIComponent(encodedKey);
+  const groups=window._dispatchGroups;
+  if(!groups||!groups[key]){toast('找不到分組資料，請重新套用篩選','danger');return;}
+  const g=groups[key];
+  const delLabel=DELIVERY_LABELS[g.delivery]||'未設定';
+  const today=new Date().toLocaleDateString('zh-TW');
+
+  // 每個門市各一頁
+  const storePages=[...g.storeNames].map((storeName,pgIdx)=>{
+    const storeOrds=S.orders.filter(o=>[...g.orderIds].includes(o.id)&&o.sname===storeName);
+    const orderDate=storeOrds[0]?.date||'';
+    const orderIdsTxt=storeOrds.map(o=>o.id).join('、');
+    const storeItems=Object.values(g.items).filter(i=>(i.stores[storeName]||0)>0);
+    const totalQty=storeItems.reduce((s,i)=>s+(i.stores[storeName]||0),0);
+    const rows=storeItems.map((i,idx)=>`
+      <tr>
+        <td class="c-seq">${idx+1}</td>
+        <td class="c-code">${i.code}</td>
+        <td class="c-name"><b>${i.name}</b>${i.spec?`／${i.spec}`:''}</td>
+        <td class="c-qty"><b>${i.stores[storeName]||0}</b></td>
+        <td class="c-unit">${i.unit}</td>
+      </tr>`).join('');
+    return`<div class="pw${pgIdx>0?' pb':''}">
+  <div style="text-align:center;margin-bottom:3mm;">
+    <div style="font-size:16pt;font-weight:900;letter-spacing:2px;">思茶國際餐飲管理顧問有限公司</div>
+    <div style="font-size:14pt;font-weight:900;letter-spacing:6px;margin-top:2px;">配 送 單 憑 證</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2mm;border-top:2px solid #000;padding-top:2mm;">
+    <div style="font-size:9pt;">新竹縣新豐鄉漳興路一段92號&nbsp;&nbsp;電話：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;聯絡人：</div>
+    <div style="font-size:9pt;font-weight:700;">叫貨日期：${orderDate}</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;border:1.5px solid #000;padding:3mm 4mm;margin-bottom:2mm;">
+    <div style="font-size:10pt;line-height:1.8;">
+      <div><b>配送單號：</b>${orderIdsTxt}</div>
+      <div><b>配送日期：</b>${today}</div>
+      <div><b>配至門市：</b><span style="font-size:12pt;font-weight:900;">${storeName}</span></div>
+    </div>
+    <div style="font-size:10pt;font-weight:700;align-self:center;">頁 次：${pgIdx+1}/${[...g.storeNames].length}</div>
+  </div>
+  <table>
+    <thead><tr>
+      <th class="c-seq">序號</th><th class="c-code">品號</th>
+      <th class="c-name">品名規格</th>
+      <th class="c-qty">數量</th><th class="c-unit">單位</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div style="display:flex;justify-content:flex-end;border-top:2px solid #000;padding:2mm 0;margin-top:0;">
+    <span style="font-size:11pt;font-weight:900;">數量合計：&nbsp;&nbsp;${totalQty}</span>
+  </div>
+  <div style="font-size:9pt;font-weight:700;margin:2mm 0;">備計：&nbsp;${delLabel}；</div>
+  <div style="display:flex;gap:0;border-top:1.5px solid #000;padding-top:3mm;margin-top:2mm;">
+    <div class="si">主&ensp;管：<div class="sl"></div></div>
+    <div class="si">覆&ensp;核：<div class="sl"></div></div>
+    <div class="si">會&ensp;計：<div class="sl"></div></div>
+    <div class="si">承&ensp;辦：<div class="sl"></div></div>
+  </div>
+  <div style="text-align:center;font-size:9pt;margin-top:4mm;font-weight:700;">─── 結 束 ───</div>
+</div>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>配送單憑證</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:10.5pt;color:#000;background:#fff;}
+.pw{padding:10mm 14mm;max-width:210mm;margin:0 auto;}
+.pb{page-break-before:always;}
+table{width:100%;border-collapse:collapse;border:1.5px solid #000;}
+th{background:#000;color:#fff;padding:4px 7px;font-size:10pt;font-weight:900;border:1px solid #000;}
+td{padding:5px 7px;border:1px solid #999;font-size:10.5pt;vertical-align:middle;}
+.c-seq{width:30px;text-align:center;}
+.c-code{width:45px;font-family:monospace;font-weight:700;}
+.c-name{font-weight:700;}
+.c-qty{width:50px;text-align:center;font-size:13pt;font-weight:900;}
+.c-unit{width:40px;text-align:center;font-weight:700;}
+.si{flex:1;font-size:10.5pt;font-weight:700;padding-right:5mm;}
+.sl{border-bottom:1.5px solid #000;height:12mm;margin-top:2mm;}
+@media print{body{background:#fff;}@page{margin:0;size:A4;}.pb{page-break-before:always;}}
+</style></head><body>
+${storePages}
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+
+  openPrintWin(html);
+
+  // 出貨單產出後顯示確認標記出貨的框
+  _pendingShipIds=[...g.orderIds];
+  const infoEl=document.getElementById('cship-info');
+  if(infoEl) infoEl.textContent=`涵蓋訂單：${_pendingShipIds.join('、')} ｜ 門市：${[...g.storeNames].join('、')}`;
+  setTimeout(()=>openM('modal-confirm-ship'),600);
+}
+function doConfirmShip(){
+  closeM('modal-confirm-ship');
+  let cnt=0;
+  _pendingShipIds.forEach(id=>{
+    const o=S.orders.find(x=>x.id===id);
+    if(o&&(o.status==='received'||o.status==='confirmed')){
+      o.status='shipping';
+      addNotif('ship','🚚 訂單出貨通知',`訂單 ${o.id} 已出貨，請注意收貨`,o.sid);
+      cnt++;
+    }
+  });
+  _pendingShipIds=[];
+  saveAll();buildSidebar();applyDispatchFilters();
+  if(cnt) toast(`${cnt} 筆訂單已標記出貨中`,'success');
+}
+
 // STOCK
 function renderStock(){
   const low=S.products.filter(p=>p.stock<=p.swarn&&p.swarn>0);
@@ -2263,13 +2969,14 @@ function exportHTML(){
   const dataScript = `<script>
 (function(){
   const backup = ${JSON.stringify({
-    derp_users:  localStorage.getItem('derp_users'),
-    derp_orders: localStorage.getItem('derp_orders'),
-    derp_notifs: localStorage.getItem('derp_notifs'),
-    derp_cats:   localStorage.getItem('derp_cats'),
-    derp_units:  localStorage.getItem('derp_units'),
-    acc_filters: localStorage.getItem('acc_filters'),
-    rpt_opts:    localStorage.getItem('rpt_opts'),
+    derp_users:    localStorage.getItem('derp_users'),
+    derp_products: localStorage.getItem('derp_products'),
+    derp_orders:   localStorage.getItem('derp_orders'),
+    derp_notifs:   localStorage.getItem('derp_notifs'),
+    derp_cats:     localStorage.getItem('derp_cats'),
+    derp_units:    localStorage.getItem('derp_units'),
+    acc_filters:   localStorage.getItem('acc_filters'),
+    rpt_opts:      localStorage.getItem('rpt_opts'),
   })};
   Object.entries(backup).forEach(([k,v])=>{ if(v) localStorage.setItem(k,v); });
 })();
