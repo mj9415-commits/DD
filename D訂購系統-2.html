@@ -304,49 +304,65 @@ table tr:hover td{background:#f8fafd;}
         </div>
         <!-- 品項管理 Tab -->
         <div id="prod-tab-items">
-          <div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;align-items:start;">
-            <div class="card">
-              <div class="card-title" id="prod-form-title">新增品項</div>
-              <div style="display:flex;flex-direction:column;gap:8px;">
-                <div class="form-grid">
-                  <div class="field"><label>品號</label><input type="text" id="p-code" placeholder="例：343"></div>
-                  <div class="field"><label>品名</label><input type="text" id="p-name" placeholder="品名"></div>
-                  <div class="field"><label>規格</label><input type="text" id="p-spec" placeholder="例：50包/箱"></div>
-                  <div class="field"><label>庫存單位</label>
-                    <select id="p-unit" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;"></select>
-                  </div>
-                  <div class="field"><label>🔒 含稅進價（成本）</label><input type="number" id="p-cost" placeholder="0"></div>
-                  <div class="field"><label>含稅售價</label><input type="number" id="p-price" placeholder="0"></div>
-                  <div class="field"><label>分類</label>
-                    <select id="p-cat" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;"></select>
-                  </div>
-                  <div class="field"><label>供應商</label><input type="text" id="p-supplier" placeholder="供應商"></div>
-                  <div class="field"><label>庫存數量</label><input type="number" id="p-stock" placeholder="0"></div>
-                  <div class="field"><label>低庫存警示值</label><input type="number" id="p-swarn" placeholder="5"></div>
-                  <div class="field form-full"><label>商品狀態</label>
-                    <select id="p-pstatus" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
-                      <option value="active">上架中</option>
-                      <option value="oos">缺貨（可見不可下單）</option>
-                      <option value="inactive">下架（季節性隱藏）</option>
-                    </select>
-                  </div>
-                  <div class="field form-full"><label>🚚 配送方式</label>
-                    <select id="p-delivery" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
-                      <option value="">未設定</option>
-                      <option value="direct_cash">廠商直送（收款）</option>
-                      <option value="direct_monthly">廠商直送（月結）</option>
-                      <option value="hq_monthly">總部配送（月結）</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="field"><label>備註說明</label><textarea id="p-note" placeholder="保存方式、免運條件等..."></textarea></div>
-                <div style="display:flex;gap:8px;">
-                  <button class="btn btn-primary" onclick="saveProd()">儲存品項</button>
-                  <button class="btn btn-outline" onclick="resetProdForm()">清除</button>
-                </div>
+          <!-- ── 新增品項觸發按鈕 ── -->
+          <div style="display:flex;gap:8px;margin-bottom:0.8rem;">
+            <button class="btn btn-primary" onclick="toggleProdForm(true)">＋ 新增品項</button>
+            <button class="btn btn-outline btn-sm" onclick="openCopyProdModal()">📋 複製品項新增</button>
+          </div>
+          <!-- ── 新增品項（預設隱藏，全寬） ── -->
+          <div class="card" style="margin-bottom:1rem;display:none;" id="prod-form-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;flex-wrap:wrap;gap:8px;">
+              <div class="card-title" id="prod-form-title" style="margin:0;">新增品項</div>
+              <button class="btn btn-outline btn-sm" onclick="toggleProdForm(false)" style="margin-left:auto;">✕ 收起</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+              <div class="field"><label>品號</label><input type="text" id="p-code" placeholder="例：343"></div>
+              <div class="field"><label>品名</label><input type="text" id="p-name" placeholder="品名"></div>
+              <div class="field"><label>規格</label><input type="text" id="p-spec" placeholder="例：50包/箱"></div>
+              <div class="field"><label>庫存單位</label>
+                <select id="p-unit" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;"></select>
+              </div>
+              <div class="field"><label>🔒 含稅進價（成本）</label><input type="number" id="p-cost" placeholder="0"></div>
+              <div class="field"><label>含稅售價</label><input type="number" id="p-price" placeholder="0"></div>
+              <div class="field"><label>分類</label>
+                <select id="p-cat" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;"></select>
+              </div>
+              <div class="field"><label>供應商</label><input type="text" id="p-supplier" placeholder="供應商"></div>
+              <div class="field"><label>庫存數量</label><input type="number" id="p-stock" placeholder="0"></div>
+              <div class="field"><label>低庫存警示值</label><input type="number" id="p-swarn" placeholder="5"></div>
+              <div class="field"><label>商品狀態</label>
+                <select id="p-pstatus" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
+                  <option value="active">上架中</option>
+                  <option value="oos">缺貨（可見不可下單）</option>
+                  <option value="inactive">下架（季節性隱藏）</option>
+                </select>
+              </div>
+              <div class="field"><label>🚚 配送方式</label>
+                <select id="p-delivery" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
+                  <option value="">未設定</option>
+                  <option value="direct">廠商直送（每週一/三 11:00 收單）</option>
+                  <option value="hq">總部配送（每週五 11:00 收單）</option>
+                </select>
+              </div>
+              <div class="field"><label>💰 收款方式</label>
+                <select id="p-payment" style="padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13.5px;font-family:inherit;">
+                  <option value="">未設定</option>
+                  <option value="cash">廠商現金</option>
+                  <option value="monthly">總部月結</option>
+                </select>
               </div>
             </div>
-            <div class="card" style="overflow:hidden;">
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:9px;margin-top:9px;align-items:end;">
+              <div class="field"><label>備註說明</label><textarea id="p-note" placeholder="保存方式、免運條件等..." style="min-height:48px;"></textarea></div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <button class="btn btn-primary" onclick="saveProd()">儲存品項</button>
+                <button class="btn btn-outline" onclick="resetProdForm()">清除</button>
+                <button class="btn btn-outline" onclick="toggleProdForm(false)">取消</button>
+              </div>
+            </div>
+          </div>
+          <!-- ── 品項列表（下方，全寬） ── -->
+          <div class="card" style="overflow:hidden;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:8px;flex-wrap:wrap;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <div class="card-title" style="margin:0;">品項列表</div>
@@ -367,9 +383,13 @@ table tr:hover td{background:#f8fafd;}
                   </select>
                   <select id="p-filter-delivery" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
                     <option value="">全部配送</option>
-                    <option value="direct_cash">廠商直送（收款）</option>
-                    <option value="direct_monthly">廠商直送（月結）</option>
-                    <option value="hq_monthly">總部配送（月結）</option>
+                    <option value="direct">廠商直送</option>
+                    <option value="hq">總部配送</option>
+                  </select>
+                  <select id="p-filter-payment" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
+                    <option value="">全部收款</option>
+                    <option value="cash">廠商現金</option>
+                    <option value="monthly">總部月結</option>
                   </select>
                   <select id="p-sort" onchange="renderProdList()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;">
                     <option value="code">排序：品號</option>
@@ -382,7 +402,6 @@ table tr:hover td{background:#f8fafd;}
               </div>
               <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="prod-list"></div>
             </div>
-          </div>
         </div>
         <!-- 分類管理 Tab -->
         <div id="prod-tab-cats" style="display:none;">
@@ -465,10 +484,8 @@ table tr:hover td{background:#f8fafd;}
               <label>配送方式</label>
               <select id="dp-delivery" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
                 <option value="">全部</option>
-                <option value="direct_cash">廠商直送（收款）</option>
-                <option value="direct_monthly">廠商直送（月結）</option>
-                <option value="hq_monthly">總部配送（月結）</option>
-                <option value="">未設定</option>
+                <option value="direct">廠商直送</option>
+                <option value="hq">總部配送</option>
               </select>
             </div>
             <div class="field">
@@ -568,6 +585,24 @@ table tr:hover td{background:#f8fafd;}
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeM('modal-bill')">取消</button>
       <button class="btn btn-accent" onclick="confirmSendBill()">確認寄出</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COPY PROD -->
+<div class="modal-overlay" id="modal-copy-prod">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">📋 複製品項新增</div>
+      <button class="modal-close" onclick="closeM('modal-copy-prod')">✕</button>
+    </div>
+    <div style="margin-bottom:9px;">
+      <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px;">選擇要複製的品項，系統會帶入其資料供編輯後儲存為新品項。</div>
+      <input type="text" id="cp-search" placeholder="搜尋品名/品號/供應商" oninput="renderCopyProdList()" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;margin-bottom:6px;">
+      <div id="cp-list" style="max-height:320px;overflow-y:auto;border:1.5px solid var(--border-light);border-radius:7px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeM('modal-copy-prod')">取消</button>
     </div>
   </div>
 </div>
@@ -729,11 +764,16 @@ const LS_KEYS = { users:'derp_users', products:'derp_products', orders:'derp_ord
 const APP_VER = '20260608_1'; // 每次要強制重置帳號時修改這個版本號
 const DELIVERY_OPTS = [
   {v:'',label:'全部'},
-  {v:'direct_cash', label:'廠商直送（收款）'},
-  {v:'direct_monthly', label:'廠商直送（月結）'},
-  {v:'hq_monthly', label:'總部配送（月結）'},
+  {v:'direct', label:'廠商直送', note:'每週一/三 11:00 收單'},
+  {v:'hq',     label:'總部配送', note:'每週五 11:00 收單'},
 ];
-const DELIVERY_LABELS = {'':'未設定','direct_cash':'廠商直送（收款）','direct_monthly':'廠商直送（月結）','hq_monthly':'總部配送（月結）'};
+const DELIVERY_LABELS = {
+  '':'未設定',
+  'direct':'廠商直送','hq':'總部配送',
+  // 舊值對應（向下相容）
+  'direct_cash':'廠商直送','direct_monthly':'廠商直送','hq_monthly':'總部配送',
+};
+const PAYMENT_LABELS = {'':'未設定','cash':'廠商現金','monthly':'總部月結'};
 
 function lsSave(){
   try{
@@ -782,6 +822,12 @@ function lsLoad(){
           // 把原始預設品項中不存在於已儲存版本的品項補進去
           S.products.forEach(def=>{
             if(!savedProds.find(p=>p.id===def.id)) savedProds.push(def);
+          });
+          // 舊配送方式值遷移
+          savedProds.forEach(p=>{
+            if(p.delivery==='direct_cash'){p.delivery='direct';if(!p.payment)p.payment='cash';}
+            else if(p.delivery==='direct_monthly'){p.delivery='direct';if(!p.payment)p.payment='monthly';}
+            else if(p.delivery==='hq_monthly'){p.delivery='hq';if(!p.payment)p.payment='monthly';}
           });
           S.products=savedProds;
         }
@@ -958,7 +1004,7 @@ function startHQOrder(){
           <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;">代訂門市：${_hqoStore.sname}</div>
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;">🚚 配送方式</div>
           <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;">
-            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${S._deliveryFilter===o.v?' active':o.v===''&&S._deliveryFilter===''?' active':''}" onclick="setHQODelivery('${o.v}',this)">${o.label}</button>`).join('')}
+            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${S._deliveryFilter===o.v?' active':o.v===''&&S._deliveryFilter===''?' active':''}" onclick="setHQODelivery('${o.v}',this)" style="display:flex;flex-direction:column;align-items:center;height:auto;padding:5px 12px;">${o.label}${o.note?`<span style="font-size:9px;font-weight:400;opacity:0.8;margin-top:1px;">${o.note}</span>`:''}</button>`).join('')}
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" id="hqo-q" placeholder="搜尋品名/品號..." oninput="renderHQOGrid()" style="flex:1;min-width:160px;padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;">
@@ -985,6 +1031,10 @@ function startHQOrder(){
   renderHQOGrid();
 }
 function renderHQOGrid(){
+  if(!S._deliveryFilter){
+    document.getElementById('hqo-grid').innerHTML=`<div style="text-align:center;padding:2.5rem;color:var(--text3);font-size:14px;">↑ 請先選擇配送方式，再瀏覽可訂購商品</div>`;
+    return;
+  }
   const q=(document.getElementById('hqo-q')?.value||'').toLowerCase();
   const cat=document.getElementById('hqo-cat')?.value||'';
   let prods=S.products.filter(p=>p.pstatus!=='inactive');
@@ -1656,7 +1706,7 @@ function renderDesktopOrder(){
         <div class="card" style="margin-bottom:1rem;">
           <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px;">🚚 配送方式</div>
           <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;" id="so-del-tabs">
-            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${(S._deliveryFilter||'')===(o.v||'')&&o.v===''?' active':S._deliveryFilter===o.v?' active':''}" onclick="setSODelivery('${o.v}',this)">${o.label}</button>`).join('')}
+            ${DELIVERY_OPTS.map(o=>`<button class="cat-chip${(S._deliveryFilter||'')===(o.v||'')&&o.v===''?' active':S._deliveryFilter===o.v?' active':''}" onclick="setSODelivery('${o.v}',this)" style="display:flex;flex-direction:column;align-items:center;height:auto;padding:5px 12px;">${o.label}${o.note?`<span style="font-size:9px;font-weight:400;opacity:0.8;margin-top:1px;">${o.note}</span>`:''}</button>`).join('')}
           </div>
           <div style="display:flex;gap:9px;flex-wrap:wrap;">
             <input type="text" id="so-q" placeholder="搜尋品名/品號..." oninput="renderDesktopGrid()" style="flex:1;min-width:180px;padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:inherit;outline:none;">
@@ -1685,6 +1735,10 @@ function renderDesktopOrder(){
   renderDesktopGrid();
 }
 function renderDesktopGrid(){
+  if(!S._deliveryFilter){
+    document.getElementById('so-grid').innerHTML=`<div style="text-align:center;padding:2.5rem;color:var(--text3);font-size:14px;">↑ 請先選擇配送方式，再瀏覽可訂購商品</div>`;
+    return;
+  }
   const q=(document.getElementById('so-q')?.value||'').toLowerCase();
   const cat=document.getElementById('so-cat')?.value||'';
   let prods=S.products.filter(p=>(p.pstatus||'active')!=='inactive');
@@ -1786,6 +1840,11 @@ function setMobCat(c,el){
   el.classList.add('active');renderMobList();
 }
 function renderMobList(){
+  if(!S._deliveryFilter){
+    const el=document.getElementById('mob-list');
+    if(el) el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3);font-size:13px;">↑ 請先選擇配送方式</div>';
+    return;
+  }
   const q=(document.getElementById('mob-q')?.value||'').toLowerCase();
   let prods=S.products.filter(p=>(p.pstatus||'active')!=='inactive');
   if(S._deliveryFilter) prods=prods.filter(p=>(p.delivery||'')===S._deliveryFilter);
@@ -1912,6 +1971,7 @@ function renderProdList(){
   const fCat=document.getElementById('p-filter-cat')?.value||'';
   const fSup=document.getElementById('p-filter-supplier')?.value||'';
   const fDel=document.getElementById('p-filter-delivery')?.value||'';
+  const fPay=document.getElementById('p-filter-payment')?.value||'';
   const sortBy=document.getElementById('p-sort')?.value||'code';
   let prods=[...S.products];
   if(q) prods=prods.filter(p=>p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)||(p.supplier||'').toLowerCase().includes(q));
@@ -1919,6 +1979,7 @@ function renderProdList(){
   if(fCat) prods=prods.filter(p=>p.cat===fCat);
   if(fSup) prods=prods.filter(p=>(p.supplier||'')===fSup);
   if(fDel) prods=prods.filter(p=>(p.delivery||'')===fDel);
+  if(fPay) prods=prods.filter(p=>(p.payment||'')===fPay);
   prods.sort((a,b)=>{
     const av=sortBy==='code'?a.code:sortBy==='name'?a.name:sortBy==='supplier'?(a.supplier||''):a.cat;
     const bv=sortBy==='code'?b.code:sortBy==='name'?b.name:sortBy==='supplier'?(b.supplier||''):b.cat;
@@ -1926,20 +1987,27 @@ function renderProdList(){
   });
   const showCost=canSeeCost();
   const pstatusLabel={active:'<span class="status status-confirmed">上架中</span>',oos:'<span class="status status-pending">缺貨</span>',inactive:'<span class="status status-inactive">已下架</span>'};
-  const delBadge=(d)=>d?`<span style="background:${d==='hq_monthly'?'var(--info-bg)':d==='direct_monthly'?'var(--success-bg)':'var(--surface2)'};color:${d==='hq_monthly'?'var(--info)':d==='direct_monthly'?'var(--success)':'var(--text2)'};padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">${DELIVERY_LABELS[d]||''}</span>`:'<span style="color:var(--text3);font-size:10.5px;">未設定</span>';
+  const delBadge=(d)=>{
+    const lbl=DELIVERY_LABELS[d]||'';
+    const note=DELIVERY_OPTS.find(o=>o.v===d)?.note||'';
+    if(!lbl) return'<span style="color:var(--text3);font-size:10.5px;">未設定</span>';
+    return`<span style="background:${d==='hq'?'var(--info-bg)':'var(--success-bg)'};color:${d==='hq'?'var(--info)':'var(--success)'};padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">${lbl}${note?`<br><span style="font-size:9px;font-weight:400;">${note}</span>`:''}</span>`;
+  };
+  const payBadge=(v)=>v?`<span style="background:${v==='monthly'?'var(--warning-bg)':'var(--surface2)'};color:${v==='monthly'?'var(--warning)':'var(--text2)'};padding:2px 7px;border-radius:4px;font-size:10.5px;font-weight:700;">${PAYMENT_LABELS[v]}</span>`:'<span style="color:var(--text3);font-size:10.5px;">未設定</span>';
   document.getElementById('prod-list').innerHTML=`
     <div style="font-size:11.5px;color:var(--text3);padding:4px 2px 6px;">共 ${prods.length} 筆</div>
-    <table style="min-width:900px;"><thead><tr>
-      <th>品號</th><th>品名</th><th>供應商</th><th>分類</th><th>配送方式</th><th>單位</th>
+    <table style="min-width:1000px;"><thead><tr>
+      <th>品號</th><th>品名</th><th>供應商</th><th>分類</th><th>配送方式</th><th>收款方式</th><th>單位</th>
       ${showCost?'<th>🔒成本</th>':''}
       <th>售價</th><th>庫存</th><th>狀態</th><th>操作</th>
     </tr></thead>
-    <tbody>${prods.map(p=>`<tr style="${(p.pstatus||'active')==='inactive'?'opacity:0.55;':''}" onclick="void(0)">
+    <tbody>${prods.map(p=>`<tr style="${(p.pstatus||'active')==='inactive'?'opacity:0.55;':''}">
       <td style="font-family:monospace;font-size:11.5px;color:var(--info);">${p.code}</td>
       <td style="max-width:140px;font-size:12.5px;">${p.name}<div style="font-size:10.5px;color:var(--text3);">${p.spec||''}</div></td>
       <td style="font-size:12px;color:var(--text2);white-space:nowrap;">${p.supplier||'—'}</td>
       <td><span class="tag">${p.cat}</span></td>
       <td style="white-space:nowrap;">${delBadge(p.delivery||'')}</td>
+      <td style="white-space:nowrap;">${payBadge(p.payment||'')}</td>
       <td style="font-size:12px;">${p.unit}</td>
       ${showCost?`<td style="color:var(--danger);font-size:12px;">$${p.cost.toLocaleString()}</td>`:''}
       <td style="font-weight:700;font-size:12px;">$${p.price.toLocaleString()}</td>
@@ -1971,15 +2039,22 @@ function saveProd(){
     note:document.getElementById('p-note').value,
     pstatus:document.getElementById('p-pstatus')?.value||'active',
     delivery:document.getElementById('p-delivery')?.value||'',
+    payment:document.getElementById('p-payment')?.value||'',
   };
   if(S._editProdId){const idx=S.products.findIndex(x=>x.id===S._editProdId);if(idx>=0)S.products[idx]=p;else S.products.push(p);}
   else S.products.push(p);
   S._editProdId=null;document.getElementById('prod-form-title').textContent='新增品項';
   resetProdForm();renderProdList();saveAll();toast('品項已儲存','success');
 }
+function toggleProdForm(show){
+  const card=document.getElementById('prod-form-card');
+  if(!card)return;
+  if(show===undefined) show=card.style.display==='none';
+  card.style.display=show?'block':'none';
+  if(show) card.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function loadProd(id){
   const p=S.products.find(x=>x.id===id);S._editProdId=id;
-  // 確保選單已填充
   populateCatSelect('p-cat',p.cat);
   populateUnitSelect('p-unit',p.unit);
   document.getElementById('prod-form-title').textContent='編輯品項 — '+p.code;
@@ -1994,8 +2069,7 @@ function loadProd(id){
   document.getElementById('p-note').value=p.note||'';
   const psel=document.getElementById('p-pstatus');if(psel) psel.value=p.pstatus||'active';
   const dsel=document.getElementById('p-delivery');if(dsel) dsel.value=p.delivery||'';
-  // 捲動到表單頂部
-  document.getElementById('prod-form-title').scrollIntoView({behavior:'smooth',block:'start'});
+  toggleProdForm(true);
 }
 function delProd(id){
   if(!confirm('確定刪除？'))return;
@@ -2009,6 +2083,49 @@ function resetProdForm(){
   populateUnitSelect('p-unit');
   const psel=document.getElementById('p-pstatus');if(psel) psel.value='active';
   const dsel=document.getElementById('p-delivery');if(dsel) dsel.value='';
+  const pasel=document.getElementById('p-payment');if(pasel) pasel.value='';
+}
+function openCopyProdModal(){
+  renderCopyProdList();
+  openM('modal-copy-prod');
+}
+function renderCopyProdList(){
+  const q=(document.getElementById('cp-search')?.value||'').toLowerCase();
+  let prods=[...S.products];
+  if(q) prods=prods.filter(p=>p.name.toLowerCase().includes(q)||p.code.toLowerCase().includes(q)||(p.supplier||'').toLowerCase().includes(q));
+  prods.sort((a,b)=>a.code.localeCompare(b.code,'zh-TW',{numeric:true}));
+  document.getElementById('cp-list').innerHTML=prods.map(p=>`
+    <div style="display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid var(--border-light);cursor:pointer;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''" onclick="doCopyProd('${p.id}')">
+      <span style="font-family:monospace;font-size:11px;color:var(--info);min-width:32px;">${p.code}</span>
+      <span style="flex:1;font-size:12.5px;font-weight:600;">${p.name}</span>
+      <span style="font-size:11.5px;color:var(--text2);white-space:nowrap;">${p.supplier||''}</span>
+      <span class="tag" style="font-size:11px;white-space:nowrap;">${p.cat}</span>
+      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();doCopyProd('${p.id}')">複製此品項</button>
+    </div>
+  `).join('');
+}
+function doCopyProd(id){
+  const p=S.products.find(x=>x.id===id);if(!p)return;
+  closeM('modal-copy-prod');
+  S._editProdId=null; // 新增，不覆蓋原品項
+  populateCatSelect('p-cat',p.cat);
+  populateUnitSelect('p-unit',p.unit);
+  document.getElementById('prod-form-title').textContent=`新增品項（複製自 ${p.code} ${p.name}）`;
+  document.getElementById('p-code').value=''; // 品號留空讓使用者填入
+  document.getElementById('p-name').value=p.name;
+  document.getElementById('p-spec').value=p.spec||'';
+  document.getElementById('p-supplier').value=p.supplier||'';
+  document.getElementById('p-cost').value=p.cost;
+  document.getElementById('p-price').value=p.price;
+  document.getElementById('p-stock').value=p.stock;
+  document.getElementById('p-swarn').value=p.swarn;
+  document.getElementById('p-note').value=p.note||'';
+  const psel=document.getElementById('p-pstatus');if(psel) psel.value=p.pstatus||'active';
+  const dsel=document.getElementById('p-delivery');if(dsel) dsel.value=p.delivery||'';
+  const pasel2=document.getElementById('p-payment');if(pasel2) pasel2.value=p.payment||'';
+  toggleProdForm(true);
+  document.getElementById('p-code').focus();
+  toast(`已複製「${p.name}」的資料，請填入新品號後儲存`,'');
 }
 
 // ACCOUNTS — 完整帳款管理模組
@@ -2105,56 +2222,206 @@ function renderAccounts(){
   applyAccFilters();
 }
 
+// 結帳日（預設25，可修改並存入localStorage）
+function getRcvCutoff(){return parseInt(localStorage.getItem('rcv_cutoff')||'25');}
+function saveRcvCutoff(v){localStorage.setItem('rcv_cutoff',String(parseInt(v)||25));}
+function editRcvCutoff(){
+  const cur=getRcvCutoff();
+  const v=prompt(`修改結帳日（目前：每月${cur}日，請輸入1-28）`,cur);
+  if(v===null)return;
+  const n=parseInt(v);
+  if(isNaN(n)||n<1||n>28){toast('請輸入1~28之間的數字','danger');return;}
+  saveRcvCutoff(n);
+  renderReceivable();
+  toast(`結帳日已更新為每月${n}日`,'success');
+}
+function getReceivablePeriod(year,month,cutoff){
+  const fromDate=new Date(year,month-2,cutoff+1);
+  const toDate=new Date(year,month-1,cutoff);
+  return{from:fromDate.toISOString().slice(0,10),to:toDate.toISOString().slice(0,10)};
+}
 function renderReceivable(){
   const el=document.getElementById('acc-receivable');if(!el)return;
+  const now=new Date();
+  const thisYear=now.getFullYear();
+  const thisMonth=now.getMonth()+1;
+  const cutoff=getRcvCutoff();
+  el.innerHTML=`
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px;">
+      <div class="field">
+        <label>帳單月份</label>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <select id="rcv-year" onchange="rcvUpdatePeriod()" style="padding:7px 8px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            ${[thisYear-1,thisYear,thisYear+1].map(y=>`<option value="${y}"${y===thisYear?' selected':''}>${y}年</option>`).join('')}
+          </select>
+          <select id="rcv-month" onchange="rcvUpdatePeriod()" style="padding:7px 8px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;">
+            ${Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}"${m===thisMonth?' selected':''}>${m}月</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>結帳日&nbsp;<button class="btn btn-outline btn-sm" onclick="editRcvCutoff()" style="padding:2px 8px;font-size:11px;">✏️ 修改</button></label>
+        <div style="font-size:13px;font-weight:700;color:var(--primary);padding:8px 0 2px;">每月 <span id="rcv-cutoff-disp">${cutoff}</span> 日</div>
+      </div>
+      <div class="field">
+        <label>結帳期間</label>
+        <div id="rcv-period" style="font-size:13px;font-weight:700;color:var(--info);padding:8px 0 2px;">計算中...</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="calcReceivable()" style="margin-bottom:4px;">📊 產生應收帳款</button>
+    </div>
+    <div id="rcv-result"></div>
+  `;
+  rcvUpdatePeriod();
+  calcReceivable();
+}
+function rcvUpdatePeriod(){
+  const year=parseInt(document.getElementById('rcv-year')?.value)||new Date().getFullYear();
+  const month=parseInt(document.getElementById('rcv-month')?.value)||new Date().getMonth()+1;
+  const cutoff=getRcvCutoff();
+  document.getElementById('rcv-cutoff-disp').textContent=cutoff;
+  const {from,to}=getReceivablePeriod(year,month,cutoff);
+  const el=document.getElementById('rcv-period');
+  if(el) el.textContent=`${from} ～ ${to}`;
+}
+function calcReceivable(){
+  const year=parseInt(document.getElementById('rcv-year')?.value)||new Date().getFullYear();
+  const month=parseInt(document.getElementById('rcv-month')?.value)||new Date().getMonth()+1;
+  const cutoff=getRcvCutoff();
+  const {from,to}=getReceivablePeriod(year,month,cutoff);
+  const el=document.getElementById('rcv-result');if(!el)return;
   const stores=S.users.filter(u=>u.role==='store');
-  // 建立 productId → delivery 的快速查找
-  const prodDel={};
-  S.products.forEach(p=>{ prodDel[p.id]=p.delivery||''; });
-  // 計算各門市的月結應收金額
+  const prodPay={};S.products.forEach(p=>{prodPay[p.id]=p.payment||'';prodPay[p.code]=p.payment||'';});
   const rows=[];
   stores.forEach(s=>{
-    const storeOrds=S.orders.filter(o=>o.sid===s.id&&['pending','confirmed','shipping','done'].includes(o.status));
-    let directMonthly=0, hqMonthly=0;
+    const storeOrds=S.orders.filter(o=>o.sid===s.id&&['confirmed','shipping','done'].includes(o.status)&&o.date>=from&&o.date<=to);
+    let monthly=0;
+    const itemsMap={};
     storeOrds.forEach(o=>{
       o.items.forEach(i=>{
-        const del=prodDel[i.pid]||prodDel[i.code]||'';
-        const amt=i.qty*i.price;
-        if(del==='direct_monthly') directMonthly+=amt;
-        if(del==='hq_monthly') hqMonthly+=amt;
+        const pay=prodPay[i.pid]||prodPay[i.code]||'';
+        if(pay!=='monthly')return;
+        monthly+=i.qty*i.price;
+        const key=i.pid||i.code;
+        if(!itemsMap[key]) itemsMap[key]={code:i.code,name:i.name,spec:i.spec||'',unit:i.unit,qty:0,price:i.price};
+        itemsMap[key].qty+=i.qty;
       });
     });
-    if(directMonthly>0||hqMonthly>0){
-      rows.push({sname:s.sname,directMonthly,hqMonthly,total:directMonthly+hqMonthly});
-    }
+    if(monthly>0) rows.push({sid:s.id,sname:s.sname,monthly,orders:storeOrds,items:Object.values(itemsMap)});
   });
   if(!rows.length){
-    el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0;">目前無月結應收帳款（請先在物料管理設定商品的配送方式）</div>';
+    el.innerHTML=`<div style="color:var(--text3);font-size:13px;padding:8px 0;">${from} ～ ${to} 期間無總部月結應收帳款</div>`;
     return;
   }
-  const totalDM=rows.reduce((s,r)=>s+r.directMonthly,0);
-  const totalHQ=rows.reduce((s,r)=>s+r.hqMonthly,0);
+  const grand=rows.reduce((s,r)=>s+r.monthly,0);
+  const fStr=JSON.stringify({from,to,year,month,cutoff});
   el.innerHTML=`
-    <table style="min-width:500px;"><thead><tr>
-      <th>門市</th>
-      <th>廠商直送（月結）</th>
-      <th>總部配送（月結）</th>
-      <th>合計</th>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">期間：${from} ～ ${to}　共 ${rows.length} 間門市</div>
+    <div class="table-wrap">
+    <table style="min-width:560px;"><thead><tr>
+      <th>門市</th><th>訂單數</th><th>總部月結應收</th><th style="text-align:center;">操作</th>
     </tr></thead>
-    <tbody>${rows.map(r=>`<tr>
+    <tbody>${rows.map((r,ri)=>`<tr>
       <td style="font-weight:700;">${r.sname}</td>
-      <td style="color:var(--success);font-weight:700;">${r.directMonthly>0?'$'+r.directMonthly.toLocaleString():'—'}</td>
-      <td style="color:var(--info);font-weight:700;">${r.hqMonthly>0?'$'+r.hqMonthly.toLocaleString():'—'}</td>
-      <td style="font-weight:700;color:var(--primary);">$${r.total.toLocaleString()}</td>
+      <td style="color:var(--text2);">${r.orders.length} 筆</td>
+      <td style="color:var(--warning);font-weight:700;font-size:14px;">$${r.monthly.toLocaleString()}</td>
+      <td style="white-space:nowrap;text-align:center;">
+        <button class="btn btn-accent btn-sm" onclick="printBillByPeriod(${ri},'${from}','${to}',${month},${year})">📄 請款單</button>
+        <button class="btn btn-outline btn-sm" onclick="exportBillCSV(${ri})">📊 Excel</button>
+      </td>
     </tr>`).join('')}</tbody>
     <tfoot><tr>
-      <td style="font-weight:700;">合計</td>
-      <td style="font-weight:700;color:var(--success);">$${totalDM.toLocaleString()}</td>
-      <td style="font-weight:700;color:var(--info);">$${totalHQ.toLocaleString()}</td>
-      <td style="font-weight:700;color:var(--primary);">$${(totalDM+totalHQ).toLocaleString()}</td>
+      <td colspan="2" style="text-align:right;font-weight:700;">合計</td>
+      <td style="font-weight:700;color:var(--primary);font-size:14px;">$${grand.toLocaleString()}</td>
+      <td style="text-align:center;">
+        <button class="btn btn-outline btn-sm" onclick="exportAllBillCSV('${from}','${to}')">📊 匯出全部 Excel</button>
+      </td>
     </tr></tfoot></table>
+    </div>
   `;
+  window._rcvRows=rows;
 }
+function printBillByPeriod(ri,from,to,month,year){
+  const r=window._rcvRows?.[ri];if(!r)return;
+  const s=S.users.find(u=>u.id===r.sid);if(!s)return;
+  const cutoff=getRcvCutoff();
+  const total=r.items.reduce((s,i)=>s+(i.qty*i.price),0);
+  const now=new Date().toLocaleString('zh-TW');
+  const rows=r.items.map((i,idx)=>`<tr>
+    <td style="text-align:center;">${idx+1}</td>
+    <td style="font-family:monospace;">${i.code}</td>
+    <td><b>${i.name}</b>${i.spec?` <span style="font-size:9pt;color:#666;">${i.spec}</span>`:''}</td>
+    <td style="text-align:center;">${i.unit}</td>
+    <td style="text-align:center;font-weight:900;">${i.qty}</td>
+    <td style="text-align:right;">$${i.price.toLocaleString()}</td>
+    <td style="text-align:right;font-weight:900;">$${(i.qty*i.price).toLocaleString()}</td>
+  </tr>`).join('');
+  openPrintWin(`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>請款單</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif;font-size:10pt;color:#000;padding:12mm 15mm;}
+.hd{text-align:center;border-bottom:2.5px solid #000;padding-bottom:4mm;margin-bottom:4mm;}
+.co{font-size:16pt;font-weight:900;}.doc{font-size:13pt;font-weight:900;letter-spacing:3px;margin-top:2px;}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9.5pt;margin-bottom:4mm;}
+table{width:100%;border-collapse:collapse;margin-bottom:4mm;}
+th{background:#000;color:#fff;padding:3px 7px;font-size:9pt;font-weight:900;text-align:left;}
+td{padding:4px 7px;border-bottom:0.5px solid #ddd;font-size:9.5pt;}
+tfoot td{font-weight:900;background:#f0f0f0;border-top:2px solid #000;font-size:11pt;}
+.sign{display:flex;gap:15mm;margin-top:6mm;border-top:1.5px solid #000;padding-top:4mm;}
+.si{flex:1;font-size:9.5pt;font-weight:700;}.sl{border-bottom:1.5px solid #000;height:12mm;margin-top:3mm;}
+@page{margin:0;size:A4;}@media print{body{padding:10mm 12mm;}}
+</style></head><body>
+<div class="hd"><div class="co">思茶國際餐飲管理顧問有限公司</div><div class="doc">總 部 月 結 請 款 單</div></div>
+<div class="info">
+  <div><b>請款對象：</b><span style="font-size:12pt;font-weight:900;">${s.sname}</span></div>
+  <div style="text-align:right;"><b>帳單月份：</b>${year}年${month}月</div>
+  <div><b>結帳期間：</b>${from} ～ ${to}</div>
+  <div style="text-align:right;"><b>結帳日：</b>每月${cutoff}日</div>
+  <div><b>聯絡電話：</b>${s.phone||'—'}</div>
+  <div style="text-align:right;"><b>產出時間：</b>${now}</div>
+</div>
+<table><thead><tr><th style="width:28px;text-align:center;">項</th><th style="width:44px;">品號</th><th>品名規格</th><th style="width:38px;text-align:center;">單位</th><th style="width:44px;text-align:center;">數量</th><th style="width:70px;text-align:right;">單價</th><th style="width:80px;text-align:right;">小計</th></tr></thead>
+<tbody>${rows}</tbody>
+<tfoot><tr><td colspan="6" style="text-align:right;">本期請款合計（${from}～${to}）</td><td style="text-align:right;font-size:13pt;">$${total.toLocaleString()}</td></tr></tfoot></table>
+<div class="sign">
+  <div class="si">客戶確認簽章：<div class="sl"></div></div>
+  <div class="si">收款日期：<div class="sl"></div></div>
+  <div class="si">總部承辦：<div class="sl"></div></div>
+</div>
+<div style="font-size:8pt;color:#888;margin-top:4mm;text-align:center;">本請款單由 D訂購系統自動產出，僅含「總部月結」收款方式品項</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`);
+}
+function exportBillCSV(ri){
+  const r=window._rcvRows?.[ri];if(!r)return;
+  const rcvYear=parseInt(document.getElementById('rcv-year')?.value)||new Date().getFullYear();
+  const rcvMonth=parseInt(document.getElementById('rcv-month')?.value)||new Date().getMonth()+1;
+  const cutoff=getRcvCutoff();
+  const {from,to}=getReceivablePeriod(rcvYear,rcvMonth,cutoff);
+  const header='項次,品號,品名,規格,單位,數量,單價,小計\n';
+  const body=r.items.map((i,idx)=>`${idx+1},"${i.code}","${i.name}","${i.spec||''}","${i.unit}",${i.qty},${i.price},${i.qty*i.price}`).join('\n');
+  const total=r.items.reduce((s,i)=>s+(i.qty*i.price),0);
+  const footer=`\n,,,,,,,合計,${total}\n期間：${from}～${to}`;
+  const csv='﻿'+`門市：${r.sname}\n帳單期間：${from} ～ ${to}\n\n`+header+body+footer;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`請款單_${r.sname}_${rcvYear}${String(rcvMonth).padStart(2,'0')}.csv`;a.click();
+  toast(`${r.sname} Excel 已下載`,'success');
+}
+function exportAllBillCSV(from,to){
+  const rows=window._rcvRows;if(!rows||!rows.length){toast('請先產生帳款資料','danger');return;}
+  let csv='﻿門市,品號,品名,規格,單位,數量,單價,小計\n';
+  rows.forEach(r=>{
+    r.items.forEach(i=>{
+      csv+=`"${r.sname}","${i.code}","${i.name}","${i.spec||''}","${i.unit}",${i.qty},${i.price},${i.qty*i.price}\n`;
+    });
+  });
+  const grand=rows.reduce((s,r)=>s+r.monthly,0);
+  csv+=`\n合計,,,,,,,$${grand}\n期間：${from}～${to}`;
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`應收帳款全部門市_${from}_${to}.csv`;a.click();
+  toast('全部門市 Excel 已下載','success');
+}
+function printMonthlyBill(sid){printBillByPeriod(0,'','','',new Date().getMonth()+1,new Date().getFullYear());}// fallback
 // ══ 分類批次指定 ══
 function openCatBatch(){
   const cats=getCats().sort((a,b)=>a.order-b.order);
@@ -2247,7 +2514,8 @@ function openBatchEdit(){
           ['bf-stock','庫存數量','number',''],
           ['bf-swarn','最低預警值','number',''],
           ['bf-ps','商品狀態','select',`<option value="active">上架中</option><option value="oos">缺貨（可見不可下單）</option><option value="inactive">已下架</option>`],
-          ['bf-del','配送方式','select',`<option value="">未設定</option><option value="direct_cash">廠商直送（收款）</option><option value="direct_monthly">廠商直送（月結）</option><option value="hq_monthly">總部配送（月結）</option>`],
+          ['bf-del','配送方式','select',`<option value="">未設定</option><option value="direct">廠商直送</option><option value="hq">總部配送</option>`],
+          ['bf-pay','收款方式','select',`<option value="">未設定</option><option value="cash">廠商現金</option><option value="monthly">總部月結</option>`],
         ].map(([id,lbl,type,opts])=>`
           <label style="display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;" id="${id}-row">
             <input type="checkbox" id="${id}-chk" onchange="toggleBF('${id}-val',this.checked,'${id}-row')">
@@ -2320,6 +2588,7 @@ function applyBatch(){
   if(document.getElementById('bf-swarn-chk')?.checked) changes.swarn=parseInt(document.getElementById('bf-swarn-val')?.value)||0;
   if(document.getElementById('bf-ps-chk')?.checked) changes.pstatus=document.getElementById('bf-ps-val')?.value;
   if(document.getElementById('bf-del-chk')?.checked) changes.delivery=document.getElementById('bf-del-val')?.value;
+  if(document.getElementById('bf-pay-chk')?.checked) changes.payment=document.getElementById('bf-pay-val')?.value;
   if(!Object.keys(changes).length){toast('請勾選至少一個要修改的欄位','danger');return;}
   let count=0;
   ids.forEach(id=>{
@@ -2741,6 +3010,7 @@ function printDispatchGroup(encodedKey){
   const today=new Date().toLocaleDateString('zh-TW');
 
   // 每個門市各一頁
+  const totalStores=[...g.storeNames].length;
   const storePages=[...g.storeNames].map((storeName,pgIdx)=>{
     const storeOrds=S.orders.filter(o=>[...g.orderIds].includes(o.id)&&o.sname===storeName);
     const orderDate=storeOrds[0]?.date||'';
@@ -2749,87 +3019,112 @@ function printDispatchGroup(encodedKey){
     const totalQty=storeItems.reduce((s,i)=>s+(i.stores[storeName]||0),0);
     const rows=storeItems.map((i,idx)=>`
       <tr>
-        <td class="c-seq">${idx+1}</td>
-        <td class="c-code">${i.code}</td>
-        <td class="c-name"><b>${i.name}</b>${i.spec?`<br><span class="c-spec">${i.spec}</span>`:''}</td>
-        <td class="c-qty"><b>${i.stores[storeName]||0}</b></td>
-        <td class="c-unit">${i.unit}</td>
+        <td class="d-seq">${idx+1}</td>
+        <td class="d-code">${i.code}</td>
+        <td class="d-name"><b>${i.name}</b>${i.spec?` <span class="d-spec">${i.spec}</span>`:''}</td>
+        <td class="d-qty">${i.stores[storeName]||0}</td>
+        <td class="d-unit">${i.unit}</td>
+        <td class="d-note"></td>
       </tr>`).join('');
     return`<div class="pw${pgIdx>0?' pb':''}">
-  <div class="hdr-title">
-    <div class="co-name">思茶國際餐飲管理顧問有限公司</div>
-    <div class="doc-name">配 送 單 憑 證</div>
-  </div>
-  <div class="hdr-sub">
-    <span>新竹縣新豐鄉漳興路一段92號&nbsp;&nbsp;電話：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;聯絡人：</span>
-    <span><b>叫貨日期：${orderDate}</b></span>
-  </div>
-  <div class="info-row">
-    <div class="info-left">
-      <div><b>配送單號：</b>${orderIdsTxt}</div>
-      <div><b>配送日期：</b>${today}&nbsp;&nbsp;&nbsp;<b>配至門市：</b><span class="store-name">${storeName}</span></div>
+  <!-- 表頭區 -->
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="co-name">思茶國際餐飲管理顧問有限公司</div>
+        <div class="co-addr">新竹縣新豐鄉漳興路一段92號&nbsp;&nbsp;電話：&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;聯絡人：</div>
+      </div>
+      <div class="doc-badge">配 送 憑 證 單</div>
     </div>
-    <div class="page-num">頁 次：${pgIdx+1}/${[...g.storeNames].length}</div>
+    <div class="hdr-div"></div>
+    <table class="info-tbl">
+      <tr>
+        <td><b>客戶名稱：</b><span class="store-name">${storeName}</span></td>
+        <td style="text-align:right;"><b>單據單號：</b><span class="mono">${orderIdsTxt}</span></td>
+      </tr>
+      <tr>
+        <td><b>配送地址：</b></td>
+        <td style="text-align:right;"><b>出貨日期：</b>${today}</td>
+      </tr>
+      <tr>
+        <td><b>聯絡電話：</b></td>
+        <td style="text-align:right;"><b>叫貨日期：</b>${orderDate}</td>
+      </tr>
+    </table>
   </div>
-  <table>
+  <!-- 明細區 -->
+  <table class="det">
     <thead><tr>
-      <th class="c-seq">序號</th><th class="c-code">品號</th>
-      <th class="c-name">品名規格</th>
-      <th class="c-qty">數量</th><th class="c-unit">單位</th>
+      <th class="d-seq">項次</th><th class="d-code">品號</th>
+      <th class="d-name">品名規格</th>
+      <th class="d-qty">數量</th><th class="d-unit">單位</th><th class="d-note">備註</th>
     </tr></thead>
-    <tbody>${rows}</tbody>
+    <tbody>${rows}
+      <tr class="tot-row">
+        <td colspan="3" style="text-align:right;font-weight:900;font-size:10pt;border-right:0.5px solid #ccc;">數量合計</td>
+        <td class="d-qty" style="font-size:14pt;font-weight:900;">${totalQty}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tbody>
   </table>
-  <div class="total-row">數量合計：<b>${totalQty}</b></div>
-  <div class="note-row">備計：${delLabel}；</div>
-  <div class="sign-row">
-    <div class="si">主&ensp;管：<div class="sl"></div></div>
-    <div class="si">覆&ensp;核：<div class="sl"></div></div>
-    <div class="si">會&ensp;計：<div class="sl"></div></div>
-    <div class="si">承&ensp;辦：<div class="sl"></div></div>
+  <!-- 頁尾區 -->
+  <div class="ftr">
+    <div class="ftr-remark">備註：${delLabel}</div>
+    <div class="ftr-sign">
+      <div class="fs-item">出貨庫別：<div class="fs-line"></div></div>
+      <div class="fs-item">送貨司機：<div class="fs-line"></div></div>
+      <div class="fs-item fs-wide">客戶簽收：<div class="fs-line"></div><div class="fs-hint">（請簽名或蓋職章）</div></div>
+    </div>
+    <div class="ftr-bottom">
+      <span class="ftr-note">D訂購系統自動產出，一式兩份，門市留存一份</span>
+      <span class="ftr-page">第 ${pgIdx+1} 頁 ／ 共 ${totalStores} 頁</span>
+    </div>
   </div>
-  <div class="end-mark">─── 結 束 ───</div>
 </div>`;
   }).join('');
 
-  const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>配送單憑證</title>
+  const html=`<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>配送憑證單</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:9.5pt;color:#000;background:#fff;line-height:1.3;}
-.pw{padding:7mm 12mm 6mm;max-width:210mm;margin:0 auto;}
+body{font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:9pt;color:#000;background:#fff;}
+/* 頁面 */
+.pw{width:21.6cm;height:14cm;padding:5mm 8mm 4mm;display:flex;flex-direction:column;overflow:hidden;}
 .pb{page-break-before:always;}
-/* 標題區 ─ 縮50% */
-.hdr-title{text-align:center;margin-bottom:0.5mm;}
-.co-name{font-size:9.5pt;font-weight:900;letter-spacing:0.5px;}
-.doc-name{font-size:8.5pt;font-weight:900;letter-spacing:4px;margin-top:0;}
-/* 副標題行 */
-.hdr-sub{display:flex;justify-content:space-between;font-size:7pt;border-top:2px solid #000;border-bottom:1px solid #000;padding:0.8mm 0;margin-bottom:1mm;}
-/* 資訊框 */
-.info-row{display:flex;justify-content:space-between;align-items:center;border:1.5px solid #000;padding:1.5mm 4mm;margin-bottom:1.5mm;}
-.info-left{font-size:8.5pt;line-height:1.45;}
-.page-num{font-size:8.5pt;font-weight:700;}
-.store-name{font-size:9.5pt;font-weight:900;}
-/* 表格 */
-table{width:100%;border-collapse:collapse;border:1.5px solid #000;}
-/* 表頭 ─ 縮50% */
-th{background:#000;color:#fff;padding:1.2px 4px;font-size:6.5pt;font-weight:900;border:1px solid #000;text-align:left;}
-td{padding:2px 5px;border:1px solid #bbb;font-size:9.5pt;vertical-align:middle;}
-.c-seq{width:28px;text-align:center;}
-.c-code{width:42px;font-family:monospace;font-weight:700;font-size:9pt;}
-.c-name{font-weight:700;}
-.c-spec{font-size:8pt;font-weight:400;color:#333;}
-.c-qty{width:48px;text-align:center;font-size:13pt;font-weight:900;}
-.c-unit{width:38px;text-align:center;font-weight:700;}
-/* 合計行 */
-.total-row{text-align:right;font-size:10.5pt;font-weight:900;border-top:2px solid #000;padding:1.5mm 0;margin-top:0;}
-/* 備計 */
-.note-row{font-size:8.5pt;font-weight:700;margin:1.5mm 0;}
-/* 簽名列 */
-.sign-row{display:flex;border-top:1.5px solid #000;padding-top:2mm;margin-top:1mm;}
-.si{flex:1;font-size:9.5pt;font-weight:700;padding-right:4mm;}
-.sl{border-bottom:1.5px solid #000;height:10mm;margin-top:1.5mm;}
-/* 結束 */
-.end-mark{text-align:center;font-size:8.5pt;margin-top:2mm;font-weight:700;}
-@media print{body{background:#fff;}@page{margin:0;size:A4;}.pb{page-break-before:always;}}
+/* ── 表頭區 ── */
+.hdr{border-bottom:2px solid #000;padding-bottom:3mm;margin-bottom:2.5mm;flex-shrink:0;}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5mm;}
+.co-name{font-size:14pt;font-weight:900;letter-spacing:1px;}
+.co-addr{font-size:7.5pt;color:#555;margin-top:1px;}
+.doc-badge{font-size:12pt;font-weight:900;letter-spacing:3px;border:2.5px solid #000;padding:3px 10px;}
+.hdr-div{border-top:1px solid #000;margin-bottom:2.5mm;}
+.info-tbl{width:100%;border-collapse:collapse;font-size:8.5pt;}
+.info-tbl td{padding:1px 0;}
+.store-name{font-size:11pt;font-weight:900;}
+.mono{font-family:monospace;font-weight:700;}
+/* ── 明細區 ── */
+.det{width:100%;border-collapse:collapse;border:1.5px solid #000;flex:1;}
+.det thead th{background:#000;color:#fff;padding:2px 5px;font-size:7.5pt;font-weight:900;border-right:1px solid #555;text-align:left;}
+.det tbody td{padding:2.5px 5px;border-bottom:0.5px solid #ccc;border-right:0.5px solid #ddd;font-size:9.5pt;vertical-align:middle;}
+.d-seq{width:28px;text-align:center;}
+.d-code{width:44px;font-family:monospace;font-weight:700;font-size:9pt;}
+.d-name{font-weight:700;}
+.d-spec{font-size:8pt;font-weight:400;color:#555;}
+.d-qty{width:44px;text-align:center;font-size:13pt;font-weight:900;}
+.d-unit{width:38px;text-align:center;font-weight:700;font-size:8.5pt;}
+.d-note{width:80px;font-size:8pt;color:#555;}
+.tot-row td{background:#f2f2f2;border-top:2px solid #000 !important;}
+/* ── 頁尾區 ── */
+.ftr{border-top:2px solid #000;padding-top:3mm;margin-top:2mm;flex-shrink:0;}
+.ftr-remark{font-size:8.5pt;font-weight:700;margin-bottom:3mm;}
+.ftr-sign{display:flex;gap:0;margin-bottom:2mm;}
+.fs-item{flex:1;font-size:8.5pt;font-weight:700;padding-right:8px;}
+.fs-wide{flex:2;}
+.fs-line{border-bottom:1.5px solid #000;height:12px;margin-top:2px;}
+.fs-hint{font-size:7pt;color:#666;text-align:right;margin-top:1px;}
+.ftr-bottom{display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid #bbb;padding-top:2mm;}
+.ftr-note{font-size:7pt;color:#777;}
+.ftr-page{font-size:9.5pt;font-weight:900;}
+@media print{body{background:#fff;}@page{margin:0;size:21.6cm 14cm;}.pb{page-break-before:always;}}
 </style></head><body>
 ${storePages}
 <script>window.onload=()=>window.print()<\/script>
