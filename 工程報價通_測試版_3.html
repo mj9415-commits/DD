@@ -93,6 +93,42 @@ textarea{min-height:88px;resize:vertical;line-height:1.7}
 .pill.draft{background:#fdf6e8;color:var(--warn)}
 .pill.old{background:#f0f3f8;color:var(--muted)}
 .center{text-align:center;padding:34px 10px;color:var(--muted);font-size:13.5px}
+/* 案場卡 / KPI / 分頁 / 勾選 */
+.kpis3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 11px}
+.kpi .n{font-size:19px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:10.5px;color:var(--muted);margin-top:2px}
+.kpi.hl{background:var(--accent2);border-color:#cfe0ee}.kpi.hl .n{color:var(--accent)}
+.site{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px 14px;
+  display:flex;flex-direction:column;gap:9px;cursor:pointer}
+.site:active{background:#fbfcfe}
+.site .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.site .nm{font-size:15px;font-weight:700;line-height:1.35}
+.site .sb{font-size:11.5px;color:var(--muted);margin-top:2px}
+.nums,.nums2,.nums3{display:grid;gap:6px;font-variant-numeric:tabular-nums}
+.nums{grid-template-columns:repeat(3,1fr)}
+.nums2{grid-template-columns:repeat(2,1fr)}
+.nums3{grid-template-columns:repeat(3,1fr)}
+.nums>div,.nums2>div,.nums3>div{background:#fafbfd;border-radius:7px;padding:8px 9px}
+.nums .v,.nums2 .v,.nums3 .v{font-size:14.5px;font-weight:700;line-height:1.25}
+.nums .k,.nums2 .k,.nums3 .k{font-size:10.5px;color:var(--muted);margin-top:1px}
+.nums .v.g{color:var(--ok)}.nums .v.r{color:var(--danger)}
+.bar{height:6px;background:#eef1f6;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar i.hot{background:var(--warn)}
+.sfoot{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.pill.go{background:var(--accent2);color:var(--accent)}
+.pill.done{background:#e8f5ee;color:var(--ok)}
+.pill.warn{background:#fdf6e8;color:var(--warn)}
+.tabs{display:flex;gap:5px;background:#eef1f6;border-radius:9px;padding:3px}
+.tabs button{flex:1;background:none;border:0;padding:8px 4px;font-size:12.5px;border-radius:7px;
+  color:var(--muted);cursor:pointer;font-family:inherit}
+.tabs button.on{background:#fff;color:var(--accent);font-weight:700;box-shadow:0 1px 3px rgba(26,35,50,.08)}
+.chk{width:20px;height:20px;border:1.5px solid var(--accent);border-radius:5px;flex:none;margin-top:2px;
+  background:#fff;cursor:pointer;position:relative;padding:0}
+.chk.on{background:var(--accent)}
+.chk.on::after{content:"✓";color:#fff;font-size:13px;position:absolute;left:3px;top:-1px;line-height:1.4}
+.btn.danger{background:#fff;color:var(--danger);border:1px solid #eccaca}
 
 /* ---------- 管理後台 ---------- */
 #app.a{background:var(--a-bg);color:var(--a-ink);min-height:100%;padding-bottom:36px}
@@ -103,11 +139,11 @@ textarea{min-height:88px;resize:vertical;line-height:1.7}
 .abar .badge{font-size:10.5px;background:#2c4258;color:var(--a-accent);padding:2px 8px;border-radius:20px;letter-spacing:1px}
 .abar .sp{flex:1}
 .abar button{background:none;border:0;color:var(--a-ink2);font-size:12.5px;cursor:pointer}
-.tabs{background:var(--a-panel);border-bottom:1px solid var(--a-line);overflow-x:auto;white-space:nowrap;
-  position:sticky;top:47px;z-index:49}
-.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:11px 15px;
-  font-size:13px;color:var(--a-ink2);cursor:pointer}
-.tabs button.on{color:#fff;border-bottom-color:var(--a-accent);font-weight:700}
+#app.a .tabs{background:var(--a-panel);border-bottom:1px solid var(--a-line);overflow-x:auto;
+  white-space:nowrap;position:sticky;top:47px;z-index:49;border-radius:0;padding:0;display:block;gap:0}
+#app.a .tabs button{flex:none;background:none;border:0;border-bottom:2px solid transparent;padding:11px 15px;
+  font-size:13px;color:var(--a-ink2);cursor:pointer;border-radius:0;box-shadow:none}
+#app.a .tabs button.on{background:none;color:#fff;border-bottom-color:var(--a-accent);font-weight:700;box-shadow:none}
 .awrap{max-width:1040px;margin:0 auto;padding:16px 14px;display:flex;flex-direction:column;gap:14px}
 .apanel{background:var(--a-panel);border:1px solid var(--a-line);border-radius:10px;padding:16px}
 .apanel h2{font-size:14px;font-weight:700;margin-bottom:13px;letter-spacing:1px;color:#fff;
@@ -117,10 +153,10 @@ textarea{min-height:88px;resize:vertical;line-height:1.7}
 .apanel input,.apanel select,.apanel textarea{background:#16202b;border-color:var(--a-line);color:var(--a-ink);
   font-size:15px;padding:9px 11px;border-radius:7px}
 .apanel input:focus,.apanel select:focus,.apanel textarea:focus{outline:0;border-color:var(--a-accent)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
-.kpi{background:#20303f;border:1px solid var(--a-line);border-radius:9px;padding:14px}
-.kpi .n{font-size:25px;font-weight:700;color:#fff;line-height:1.25;font-variant-numeric:tabular-nums}
-.kpi .l{font-size:11.5px;color:var(--a-muted);margin-top:3px;letter-spacing:.5px}
+#app.a .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
+#app.a .kpi{background:#20303f;border:1px solid var(--a-line);border-radius:9px;padding:14px}
+#app.a .kpi .n{font-size:25px;font-weight:700;color:#fff;line-height:1.25;font-variant-numeric:tabular-nums}
+#app.a .kpi .l{font-size:11.5px;color:var(--a-muted);margin-top:3px;letter-spacing:.5px}
 .abtn{display:inline-block;padding:9px 16px;border:0;border-radius:7px;background:var(--a-accent);
   color:#0d1620;font-size:13.5px;font-weight:700;cursor:pointer}
 .abtn.block{display:block;width:100%}
@@ -145,8 +181,8 @@ table.t td.n{color:#fff;font-weight:600}
 .awarn{background:#3a3320;border:1px solid #5b5230;color:var(--a-warn);padding:11px 14px;border-radius:8px;
   font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .awarn button{background:none;border:0;color:var(--a-warn);font-weight:700;cursor:pointer;font-size:13px}
-.bar{height:6px;background:#20303f;border-radius:6px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--a-accent)}
+#app.a .bar{height:6px;background:#20303f;border-radius:6px;overflow:hidden}
+#app.a .bar i{display:block;height:100%;background:var(--a-accent)}
 
 /* ---------- 報價單列印頁 ---------- */
 #app.p{background:#f4f6f9;color:var(--ink);min-height:100%;padding:16px 10px 96px}
@@ -159,8 +195,10 @@ table.t td.n{color:#fff;font-weight:600}
 .cosub{font-size:11.5px;color:var(--muted);margin-top:4px}
 .tt{text-align:right}
 .tt h1{font-size:26px;font-weight:700;letter-spacing:7px;color:var(--accent);line-height:1;margin-bottom:11px}
-.meta{font-size:12px;color:var(--ink2);line-height:1.9}
-.meta span{color:var(--muted);display:inline-block;min-width:58px}
+.meta{font-size:12px;color:var(--ink2);line-height:1.85;display:grid;
+  grid-template-columns:auto auto;gap:0 10px;justify-content:end;text-align:left}
+.meta span{color:var(--muted);letter-spacing:1px}
+
 .rule{height:2px;background:var(--accent);margin-top:16px;border-radius:2px}
 .client{display:grid;grid-template-columns:1fr 1fr;gap:4px 26px;padding:15px 0 16px;font-size:12.5px}
 .client .k{color:var(--muted);display:inline-block;min-width:52px}
@@ -200,6 +238,45 @@ table.q tr.sb td.r{font-weight:700;color:var(--ink)}
 .pbar button{flex:1;padding:12px;border:0;border-radius:9px;background:var(--accent);color:#fff;
   font-size:15px;font-weight:600;cursor:pointer}
 .pbar button.g{background:#fff;color:var(--ink2);border:1px solid var(--line)}
+/* 報表用 */
+.sech{font-size:11.5px;letter-spacing:2px;color:var(--accent);font-weight:700;
+  margin:14px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.rsum{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.rbox{border:1px solid var(--line);border-radius:5px;padding:7px 9px;background:#fafbfd}
+.rbox .n{font-size:15px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums}
+.rbox .l{font-size:10px;color:var(--muted);margin-top:1px}
+.rbox.hl{background:var(--accent2);border-color:#cfe0ee}.rbox.hl .n{color:var(--accent)}
+.rcats{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.rcat{border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--ink2);background:#fff}
+.rcat b{font-variant-numeric:tabular-nums}
+table.q.rep{font-size:11px;table-layout:fixed}
+table.q.rep thead th{font-size:9.5px;padding:6px 5px;letter-spacing:.5px}
+table.q.rep tbody td{padding:6px 5px;word-break:break-word;font-variant-numeric:tabular-nums}
+.tagc{display:inline-block;font-size:9.5px;padding:1px 6px;border-radius:20px;background:#eef1f6;color:var(--ink2);white-space:nowrap}
+.pref{font-size:10px;color:var(--accent);font-weight:700}
+.pgbreak{break-before:page;page-break-before:always}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pcard{border:1px solid var(--line);border-radius:5px;overflow:hidden;background:#fff;
+  break-inside:avoid;page-break-inside:avoid;min-width:0}
+.pframe{height:170px;background:#f4f6f9;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--line2);padding:3px}
+.pframe img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.pcap{padding:5px 7px}
+.pcap .c1{font-size:11.5px;font-weight:600;line-height:1.35}
+.pcap .c2{font-size:10px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.pbadge{display:inline-block;background:var(--accent);color:#fff;font-size:9.5px;font-weight:700;
+  padding:1px 6px;border-radius:3px;margin-right:5px;vertical-align:1px}
+.repbar{max-width:820px;margin:0 auto 12px;background:#fff;border:1px solid var(--line);border-radius:10px;
+  padding:11px 14px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px}
+.repbar label{margin:0;color:var(--ink);display:flex;align-items:center;gap:7px;font-size:13px}
+.repbar input{width:18px;height:18px}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){.scrollx table.q.rep{min-width:660px}}
+@media print{.noprint{display:none!important}
+  @page{size:A4;margin:11mm 12mm 13mm}
+  .pframe{height:60mm}
+  .scrollx{overflow:visible}
+  .scrollx table.q.rep{min-width:0}}
 
 /* ---------- 對話框 ---------- */
 .mask{position:fixed;inset:0;background:rgba(12,20,30,.55);z-index:200;display:flex;align-items:center;
@@ -246,8 +323,20 @@ const qty=n=>{const v=Number(n)||0;return (Math.round(v*100)/100).toString();};
 let DB=null, S={page:'login', flash:'', uid:null, lastTrade:''};
 
 function blank(){
-  return {seq:{u:0,q:0,i:0,l:0,p:0,e:0},users:[],settings:{},quotes:[],items:[],
-          lib:[],projects:[],expenses:[],app:{adOn:false,adHtml:''}};
+  return {seq:{u:0,q:0,i:0,l:0,p:0,e:0,pay:0,inv:0},users:[],settings:{},quotes:[],items:[],
+          lib:[],projects:[],expenses:[],payments:[],invoices:[],app:{adOn:false,adHtml:''}};
+}
+/** 舊資料升級：補上新欄位，沒掛案場的先留在「未歸戶」 */
+function upgrade(){
+  DB.payments=DB.payments||[]; DB.invoices=DB.invoices||[];
+  DB.seq.pay=DB.seq.pay||0; DB.seq.inv=DB.seq.inv||0;
+  DB.projects.forEach(p=>{
+    if(p.customer===undefined)p.customer='';
+    if(p.status===undefined)p.status='go';
+    if(p.created===undefined)p.created=now();
+  });
+  DB.quotes.forEach(q=>{ if(q.projectId===undefined)q.projectId=0; });
+  DB.expenses.forEach(e=>{ if(e.projectId===undefined)e.projectId=0; });
 }
 function nid(k){DB.seq[k]=(DB.seq[k]||0)+1;return DB.seq[k];}
 
@@ -287,7 +376,7 @@ function save(){
 function load(){
   let raw=null;
   try{raw=localStorage.getItem(KEY);}catch(e){}
-  if(raw){try{DB=JSON.parse(raw);return;}catch(e){}}
+  if(raw){try{DB=JSON.parse(raw);upgrade();return;}catch(e){}}
   seed();
 }
 function me(){return DB.users.find(u=>u.id===S.uid)||null;}
@@ -318,6 +407,40 @@ function libTouch(kind,name,trade,unit,price){
   else DB.lib.push({id:nid('l'),userId:S.uid,kind,trade,name,unit:unit||'',lastPrice:price||0,starred:0,useCount:1});
 }
 function officialHas(name){return DB.lib.some(l=>l.userId===null&&l.kind==='item'&&l.name===name);}
+
+/* ---- 案場 ---- */
+function myProjects(){return DB.projects.filter(p=>p.userId===S.uid);}
+function proj(id){return DB.projects.find(p=>p.id===id&&p.userId===S.uid)||null;}
+function projQuotes(pid){return DB.quotes.filter(q=>q.userId===S.uid&&q.projectId===pid);}
+function projExpenses(pid){return DB.expenses.filter(e=>e.userId===S.uid&&e.projectId===pid);}
+function projPayments(pid){return (DB.payments||[]).filter(x=>x.userId===S.uid&&x.projectId===pid);}
+function projInvoices(pid){return (DB.invoices||[]).filter(x=>x.userId===S.uid&&x.projectId===pid);}
+/** 案場結算：報價只算最新版且已完成的單 */
+function projSum(pid){
+  const qs=projQuotes(pid).filter(q=>q.isLatest&&q.status!=='draft');
+  const quoted=qs.reduce((s,q)=>s+totals(q.id).total,0);
+  const spent=projExpenses(pid).reduce((s,e)=>s+e.amount,0);
+  const received=projPayments(pid).reduce((s,x)=>s+x.amount,0);
+  return {quoted,spent,received,profit:quoted-spent,
+    rate:quoted>0?Math.round((quoted-spent)/quoted*1000)/10:0,
+    used:quoted>0?Math.min(100,Math.round(spent/quoted*100)):0,
+    nq:projQuotes(pid).length,ne:projExpenses(pid).length,
+    due:quoted-received};
+}
+function orphanQuotes(){return DB.quotes.filter(q=>q.userId===S.uid&&!q.projectId);}
+function orphanExpenses(){return DB.expenses.filter(e=>e.userId===S.uid&&!e.projectId);}
+function invoiceNo(inv){
+  const p=proj(inv.projectId);
+  const base=((p&&p.name)||'請款').slice(0,12);
+  return base+'-請款-'+String(inv.seq).padStart(3,'0');
+}
+/** 猜這筆資料屬於哪個案場：先比案名／客戶名稱 */
+function guessProject(text){
+  const t=(text||'').trim(); if(!t)return 0;
+  const hit=myProjects().find(p=>t.includes(p.name)||(p.customer&&t.includes(p.customer))
+    ||p.name.includes(t)||(p.customer&&p.customer===t));
+  return hit?hit.id:0;
+}
 function unitList(){
   return [...new Set(DB.lib.filter(l=>l.kind==='unit'&&(l.userId===null||l.userId===S.uid)).map(l=>l.name))];
 }
@@ -354,6 +477,8 @@ function render(){
   const app=$('#app'); const u=me();
   if(!u){app.className='u';app.innerHTML=vLogin();bind();return;}
   if(S.page==='print'){app.className='p';app.innerHTML=vPrint(S.arg);bind();return;}
+  if(S.page==='expReport'){app.className='p';app.innerHTML=vExpReport();bind();return;}
+  if(S.page==='invoicePrint'){app.className='p';app.innerHTML=vInvoice(S.arg);bind();return;}
   const adminPages=['adash','aquotes','aquote','aexpenses','aprices','alib','acand','ausers','aads'];
   if(adminPages.includes(S.page)){app.className='a';app.innerHTML=vAdmin();bind();return;}
   app.className='u';app.innerHTML=vUser();bind();
@@ -406,8 +531,9 @@ A.doRegister=f=>{
 
 /* ============ 使用者介面 ============ */
 function nav(cur){
-  const items=[['home','首頁','🏠'],['quotes','報價單','📄'],['expNew','記支出','📷'],['expenses','支出','📊'],['settings','設定','⚙️']];
+  const items=[['home','案場','🏗'],['quotes','報價單','📄'],['expNew','記支出','📷'],['expenses','支出','📊'],['settings','設定','⚙️']];
   if(me().isAdmin){items.splice(3,1);items.push(['adash','後台','🛠']);}
+  if(cur==='project'||cur==='projectEdit'||cur==='assign')cur='home';
   return `<div class="nav">${items.map(i=>
     `<button data-go="${i[0]}" class="${cur===i[0]?'on':''}"><span class="ic">${i[2]}</span>${i[1]}</button>`).join('')}</div>`;
 }
@@ -418,9 +544,12 @@ function adSlot(){
 function vUser(){
   const u=me(),f=fx();
   const body={home:pHome,settings:pSettings,account:pAccount,quotes:pQuotes,quoteNew:pQuoteNew,
-    quote:pQuote,expNew:pExpNew,expEdit:pExpEdit,expenses:pExpenses,settle:pSettle,stars:pStars}[S.page]||pHome;
+    quote:pQuote,expNew:pExpNew,expEdit:pExpEdit,expenses:pExpenses,settle:pSettle,stars:pStars,
+    project:pProject,projectEdit:pProjectEdit,assign:pAssign,invoiceNew:pInvoiceNew,
+    invoices:pInvoices,payNew:pPayNew}[S.page]||pHome;
   const titles={settings:'公司設定',account:'帳號設定',quotes:'報價單',quoteNew:'新報價單',
-    quote:'報價單',expNew:'登記支出',expEdit:'修改支出',expenses:'支出',settle:'結算',stars:'我的常用'};
+    quote:'報價單',expNew:'登記支出',expEdit:'修改支出',expenses:'支出',settle:'結算',stars:'我的常用',
+    projectEdit:'案場',assign:'整理未歸戶資料',invoiceNew:'產生請款單',invoices:'請款紀錄',payNew:'登記收款'};
   return `<div class="top"><h1>工程報價通${titles[S.page]?' · '+titles[S.page]:''}</h1>
     <button class="lnk" onclick="A.logout()">登出</button></div>
     <div class="wrap">${f?`<div class="flash">${h(f)}</div>`:''}${body()}</div>${nav(S.page)}`;
@@ -428,28 +557,229 @@ function vUser(){
 
 function pHome(){
   const u=me(),st=mySet();
-  const qs=DB.quotes.filter(q=>q.userId===S.uid);
-  const es=DB.expenses.filter(e=>e.userId===S.uid);
-  const m=today().slice(0,7);
-  const sum=es.filter(e=>e.date.startsWith(m)).reduce((s,e)=>s+e.amount,0);
-  const recent=qs.slice().sort((a,b)=>b.updated.localeCompare(a.updated)).slice(0,5);
+  const ps=myProjects();
+  const sums=ps.map(p=>({p,s:projSum(p.id)}));
+  const going=sums.filter(x=>x.p.status==='go');
+  const quoted=going.reduce((a,x)=>a+x.s.quoted,0);
+  const profit=going.reduce((a,x)=>a+x.s.profit,0);
+  const oq=orphanQuotes().length, oe=orphanExpenses().length;
+  const order={go:0,done:1};
+  sums.sort((a,b)=>(order[a.p.status]-order[b.p.status])||b.p.id-a.p.id);
   return `
   ${u.mustChange?`<div class="alert"><span>你還在用預設密碼，請先改一組自己的。</span><button data-go="account">改密碼 →</button></div>`:''}
   ${!st.company?`<div class="alert"><span>報價單上要顯示公司資料，建議先花 2 分鐘填一次。</span><button data-go="settings">去設定 →</button></div>`:''}
-  <div class="card"><h2>快速開始</h2><div class="stack">
-    <button class="btn" data-go="quoteNew">＋ 建立報價單</button>
-    <button class="btn ghost" data-go="expNew">📷 登記一筆支出</button></div></div>
-  <div class="card"><h2>本月概況</h2>
-    <div class="tot"><span>報價單累計</span><span class="v">${qs.length} 張</span></div>
-    <div class="tot"><span>支出筆數</span><span class="v">${es.length} 筆</span></div>
-    <div class="tot"><span>本月支出金額</span><span class="v">NT$ ${money(sum)}</span></div></div>
+  <div class="kpis3">
+    <div class="kpi"><div class="n">${going.length}</div><div class="l">進行中案場</div></div>
+    <div class="kpi"><div class="n">${money(quoted)}</div><div class="l">報價總額</div></div>
+    <div class="kpi hl"><div class="n">${money(profit)}</div><div class="l">預估毛利</div></div>
+  </div>
+  ${(oq||oe)?`<div class="alert"><span><b>有資料還沒歸到案場</b><br>${oq} 張報價單、${oe} 筆支出</span>
+    <button data-go="assign">去整理 →</button></div>`:''}
+  <button class="btn" data-go="projectEdit|0">＋ 新增案場</button>
   ${adSlot()}
-  ${recent.length?`<div class="card"><h2>最近的報價單</h2><ul class="list">${recent.map(q=>{
-    const t=totals(q.id);
-    return `<li><div class="g"><div class="t"><a href="#" data-go="quote|${q.id}|${q.status==='draft'?2:4}">${h(quoteNo(q))}</a></div>
-      <div class="s">${h(q.cusName||'未填客戶')} · ${h(q.updated.slice(0,10))}${!q.isLatest?' <span class="pill old">舊版</span>':''}</div></div>
-      <span class="amt">NT$ ${money(t.total)}</span></li>`;}).join('')}</ul></div>`:''}`;
+  ${!ps.length?'<div class="center">還沒有案場。先開一個案場，之後報價單和支出都會歸在它底下。</div>':
+   sums.map(({p,s})=>`
+    <div class="site" data-go="project|${p.id}">
+      <div class="hd"><div><div class="nm">${h(p.name)}</div>
+        <div class="sb">${h([p.customer,p.address].filter(Boolean).join(' · ')||'—')}</div></div>
+        <span class="pill ${p.status==='done'?'done':(s.quoted>0&&s.used>=85?'warn':'go')}">${
+          p.status==='done'?'已結案':(s.quoted>0&&s.used>=85?'支出偏高':'進行中')}</span></div>
+      <div class="nums">
+        <div><div class="v">${money(s.quoted)}</div><div class="k">報價</div></div>
+        <div><div class="v">${money(s.spent)}</div><div class="k">支出</div></div>
+        <div><div class="v ${s.profit>=0?'g':'r'}">${money(s.profit)}</div><div class="k">毛利 ${s.rate}%</div></div>
+      </div>
+      <div class="bar"><i class="${s.used>=85?'hot':''}" style="width:${s.used}%"></i></div>
+      <div class="sfoot"><span>${s.nq} 張報價單 · ${s.ne} 筆支出</span>
+        <span>${s.received>0?'已收 '+money(s.received):'尚未收款'}</span></div>
+    </div>`).join('')}`;
 }
+
+/* ---- 案場詳情 ---- */
+function pProject(){
+  const p=proj(S.arg);
+  if(!p) return '<div class="center">找不到這個案場。</div>';
+  const s=projSum(p.id), tab=S.ptab||'quote';
+  const qs=projQuotes(p.id).sort((a,b)=>b.updated.localeCompare(a.updated));
+  const es=projExpenses(p.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const pays=projPayments(p.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const invs=projInvoices(p.id).sort((a,b)=>b.seq-a.seq);
+  const photoN=es.reduce((n,e)=>n+((e.photos||[]).length),0);
+  let list='';
+  if(tab==='quote'){
+    list=`<div class="card"><h2>報價單 <span class="tag">${qs.length} 張</span></h2>
+      ${!qs.length?'<p class="muted">還沒有報價單。</p>':`<ul class="list">${qs.map(q=>{
+        const t=totals(q.id);
+        return `<li><div class="g"><div class="t"><a href="#" data-go="quote|${q.id}|${q.status==='draft'?2:4}">${h(quoteNo(q))}</a>
+          ${q.status==='draft'?'<span class="pill draft">草稿</span>':(!q.isLatest?'<span class="pill old">舊版</span>':'<span class="pill ok">最新</span>')}</div>
+          <div class="s">${h(q.cusName||'—')} · ${h(q.updated.slice(0,10))} · ${qItems(q.id).length} 項</div></div>
+          <div style="text-align:right"><div class="amt">NT$ ${money(t.total)}</div>
+          <button class="btn sm gray" style="margin-top:5px" data-go="print|${q.id}">PDF</button></div></li>`;}).join('')}</ul>`}
+      <div style="height:11px"></div>
+      <button class="btn ghost" onclick="A.newQuoteIn(${p.id})">＋ 在這個案場開新報價單</button></div>`;
+  }
+  if(tab==='exp'){
+    list=`<div class="card"><h2>支出 <span class="tag">${es.length} 筆</span></h2>
+      ${!es.length?'<p class="muted">還沒有支出。</p>':`<ul class="list">${es.slice(0,20).map(e=>
+        `<li>${(e.photos&&e.photos.length)?`<img class="thumb" src="${e.photos[0]}" alt="工單" onclick="A.viewPhoto(${e.id})">`:''}
+        <div class="g"><div class="t">${h(e.name)}</div>
+        <div class="s">${h(e.date)} · ${h(e.category)}${e.vendor?' · '+h(e.vendor):''}${(e.photos||[]).length>1?' · 📷'+e.photos.length:''}</div></div>
+        <div style="text-align:right"><div class="amt">NT$ ${money(e.amount)}</div>
+        <button class="btn sm ghost" style="margin-top:5px" data-go="expEdit|${e.id}">改</button></div></li>`).join('')}</ul>`}
+      <div style="height:11px"></div>
+      <button class="btn ghost" onclick="A.newExpIn(${p.id})">＋ 在這個案場登記支出</button></div>`;
+  }
+  if(tab==='pay'){
+    list=`<div class="card"><h2>收款紀錄 <span class="tag">${pays.length} 筆</span></h2>
+      <div class="tot"><span>合約總額</span><span class="v">NT$ ${money(s.quoted)}</span></div>
+      <div class="tot"><span>已收款</span><span class="v">NT$ ${money(s.received)}</span></div>
+      <div class="tot big"><span>尚未收</span><span class="v">NT$ ${money(s.due)}</span></div>
+      ${!pays.length?'<p class="muted" style="margin-top:10px">還沒有收款紀錄。業主匯款後記一筆，請款單就會自動算尾款。</p>':
+        `<ul class="list" style="margin-top:8px">${pays.map(x=>
+        `<li><div class="g"><div class="t">${h(x.note||x.method)}</div>
+          <div class="s">${h(x.date)} · ${h(x.method)}</div></div>
+          <div style="text-align:right"><div class="amt">NT$ ${money(x.amount)}</div>
+          <button class="btn sm danger" style="margin-top:5px" onclick="A.delPay(${x.id})">刪</button></div></li>`).join('')}</ul>`}
+      <div style="height:11px"></div>
+      <button class="btn ghost" data-go="payNew|${p.id}">＋ 登記一筆收款</button></div>
+      ${invs.length?`<div class="card"><h2>已開請款單 <span class="tag">${invs.length}</span></h2><ul class="list">${
+        invs.map(iv=>`<li><div class="g"><div class="t"><a href="#" data-go="invoicePrint|${iv.id}">${h(invoiceNo(iv))}</a></div>
+        <div class="s">${h(iv.date)} · ${h(iv.ratioLabel)}</div></div>
+        <div class="amt">NT$ ${money(iv.amount)}</div></li>`).join('')}</ul></div>`:''}`;
+  }
+  return `
+  <div class="card"><h2>結算 <span class="tag">${p.status==='done'?'已結案':'進行中'}</span></h2>
+    <div class="nums2">
+      <div><div class="v">${money(s.quoted)}</div><div class="k">報價金額</div></div>
+      <div><div class="v">${money(s.spent)}</div><div class="k">實際支出</div></div>
+    </div>
+    <div class="tot big"><span>毛利</span>
+      <span class="v" style="color:${s.profit>=0?'var(--ok)':'var(--danger)'}">NT$ ${money(s.profit)}</span></div>
+    <p class="muted">毛利率 ${s.rate}%　·　支出已用掉報價的 ${s.used}%${s.received>0?'　·　已收 '+money(s.received):''}</p>
+  </div>
+  <div class="tabs">
+    <button class="${tab==='quote'?'on':''}" onclick="A.ptab('quote')">報價單 ${qs.length}</button>
+    <button class="${tab==='exp'?'on':''}" onclick="A.ptab('exp')">支出 ${es.length}</button>
+    <button class="${tab==='pay'?'on':''}" onclick="A.ptab('pay')">收款 ${pays.length}</button>
+  </div>
+  ${list}
+  <button class="btn" data-go="invoiceNew|${p.id}">📑 產生請款單</button>
+  <button class="btn gray" data-go="expReport|${p.id}">📄 匯出支出 PDF（含照片 ${photoN} 張）</button>
+  <button class="btn gray" data-go="projectEdit|${p.id}">編輯案場資料</button>
+  <button class="btn gray" onclick="A.toggleDone(${p.id})">${p.status==='done'?'↩ 取消結案':'✅ 標記為已結案'}</button>
+  <button class="btn gray" data-go="home">← 回案場總覽</button>`;
+}
+A.ptab=t=>{S.ptab=t;render();};
+A.toggleDone=id=>{const p=proj(id);p.status=p.status==='done'?'go':'done';save();flash(p.status==='done'?'已標記結案':'已改回進行中');render();};
+A.newQuoteIn=pid=>{S.newQuoteProject=pid;A.go('quoteNew');};
+A.newExpIn=pid=>{S.lastProject=pid;A.go('expNew');};
+A.delPay=id=>{if(!confirm('刪除這筆收款？'))return;DB.payments=DB.payments.filter(x=>x.id!==id);save();render();};
+
+/* ---- 新增／編輯案場 ---- */
+function pProjectEdit(){
+  const id=S.arg|0, p=id?proj(id):null;
+  return `<div class="card"><h2>${p?'編輯案場':'新增案場'}</h2>
+    <form onsubmit="return A.saveProject(this,${id})">
+      <label>案場名稱</label><input name="name" required value="${p?h(p.name):''}" placeholder="文山路住宅">
+      <label>客戶</label><input name="customer" value="${p?h(p.customer):''}" placeholder="陳先生">
+      <label>電話</label><input name="phone" inputmode="tel" value="${p?h(p.phone||''):''}">
+      <label>地址</label><input name="address" value="${p?h(p.address):''}">
+      <div style="height:16px"></div><button class="btn">${p?'儲存':'建立案場'}</button>
+    </form></div>
+    ${p?`<button class="btn danger" onclick="A.delProject(${id})">刪除這個案場</button>
+      <p class="muted" style="text-align:center">底下的報價單和支出不會被刪除，會回到「未歸戶」。</p>`:''}
+    <button class="btn gray" data-go="${p?'project|'+id:'home'}">取消</button>`;
+}
+A.saveProject=(f,id)=>{
+  const d={name:f.name.value.trim(),customer:f.customer.value.trim(),
+    phone:f.phone.value.trim(),address:f.address.value.trim()};
+  if(!d.name)return false;
+  if(id){Object.assign(proj(id),d);flash('案場已更新');save();A.go('project',id);}
+  else{const nid2=nid('p');
+    DB.projects.push(Object.assign({id:nid2,userId:S.uid,status:'go',created:now()},d));
+    save();flash('案場已建立');A.go('project',nid2);}
+  return false;
+};
+A.delProject=id=>{
+  if(!confirm('刪除這個案場？底下的報價單和支出會回到「未歸戶」，不會被刪掉。'))return;
+  DB.quotes.forEach(q=>{if(q.projectId===id)q.projectId=0;});
+  DB.expenses.forEach(e=>{if(e.projectId===id)e.projectId=0;});
+  DB.payments=DB.payments.filter(x=>x.projectId!==id);
+  DB.projects=DB.projects.filter(x=>x.id!==id);
+  save();flash('案場已刪除');A.go('home');
+};
+
+/* ---- 歸戶整理 ---- */
+function pAssign(){
+  const ps=myProjects();
+  if(!ps.length) return `<div class="card"><h2>還沒有案場</h2>
+    <p class="muted">要先建一個案場，才能把資料歸過去。</p><div style="height:12px"></div>
+    <button class="btn" data-go="projectEdit|0">＋ 新增案場</button></div>`;
+  const target=S.assignTo||ps[0].id;
+  const oq=orphanQuotes(), oe=orphanExpenses();
+  if(!S.assignInit){S.assignInit=1;S.pick={};
+    oq.forEach(q=>{if(guessProject(q.projectName||q.cusName)===target)S.pick['q'+q.id]=1;});
+    oe.forEach(e=>{if(guessProject(e.name)===target)S.pick['e'+e.id]=1;});}
+  const n=Object.values(S.pick||{}).filter(Boolean).length;
+  return `<div class="card"><h2>指定到哪個案場</h2>
+    <select onchange="A.assignTo(this.value)">${ps.map(p=>
+      `<option value="${p.id}"${target===p.id?' selected':''}>${h(p.name)}${p.customer?' · '+h(p.customer):''}</option>`).join('')}</select>
+    <p class="muted" style="margin-top:7px">選好案場後，下面勾起來的資料會一次歸到這個案場底下。</p></div>
+  ${!oq.length&&!oe.length?'<div class="center">沒有未歸戶的資料，都整理好了 ✅</div>':''}
+  ${oq.length?`<div class="card"><h2>沒歸戶的報價單 <span class="tag">${oq.length} 張</span></h2>
+    <ul class="list">${oq.map(q=>`<li>
+      <button class="chk ${S.pick['q'+q.id]?'on':''}" onclick="A.pick('q${q.id}')" aria-label="選取"></button>
+      <div class="g"><div class="t">${h(quoteNo(q))}</div>
+      <div class="s">${h(q.cusName||'—')}${q.projectName?' · '+h(q.projectName):''} · ${h(q.updated.slice(0,10))}</div></div>
+      <div class="amt">${money(totals(q.id).total)}</div></li>`).join('')}</ul></div>`:''}
+  ${oe.length?`<div class="card"><h2>沒歸戶的支出 <span class="tag">${oe.length} 筆</span></h2>
+    <ul class="list">${oe.map(e=>`<li>
+      <button class="chk ${S.pick['e'+e.id]?'on':''}" onclick="A.pick('e${e.id}')" aria-label="選取"></button>
+      <div class="g"><div class="t">${h(e.name)}</div>
+      <div class="s">${h(e.date)} · ${h(e.category)}${e.vendor?' · '+h(e.vendor):''}</div></div>
+      <div class="amt">${money(e.amount)}</div></li>`).join('')}</ul></div>`:''}
+  ${(oq.length||oe.length)?`<button class="btn" onclick="A.doAssign()">把勾選的 ${n} 筆歸到「${h(proj(target).name)}」</button>
+    <p class="muted" style="text-align:center">系統會依照案名和客戶名稱先幫你猜，猜中的預設勾起來</p>`:''}
+  <button class="btn gray" data-go="home">← 回案場總覽</button>`;
+}
+A.assignTo=v=>{S.assignTo=+v;S.assignInit=0;render();};
+A.pick=k=>{S.pick=S.pick||{};S.pick[k]=!S.pick[k];render();};
+A.doAssign=()=>{
+  const t=S.assignTo||myProjects()[0].id;
+  let n=0;
+  Object.keys(S.pick||{}).forEach(k=>{
+    if(!S.pick[k])return;
+    const id=+k.slice(1);
+    if(k[0]==='q'){const q=DB.quotes.find(x=>x.id===id);if(q){q.projectId=t;n++;}}
+    else{const e=DB.expenses.find(x=>x.id===id);if(e){e.projectId=t;n++;}}
+  });
+  S.pick={};S.assignInit=0;save();flash('已歸戶 '+n+' 筆');render();
+};
+
+/* ---- 收款登記 ---- */
+function pPayNew(){
+  const p=proj(S.arg); if(!p) return '<div class="center">找不到案場。</div>';
+  const s=projSum(p.id);
+  return `<div class="card"><h2>登記收款 · ${h(p.name)}</h2>
+    <div class="tot"><span>合約總額</span><span class="v">NT$ ${money(s.quoted)}</span></div>
+    <div class="tot"><span>已收</span><span class="v">NT$ ${money(s.received)}</span></div>
+    <div class="tot"><span>尚未收</span><span class="v">NT$ ${money(s.due)}</span></div>
+    <form onsubmit="return A.savePay(this,${p.id})">
+      <label>收款日期</label><input type="date" name="date" value="${today()}">
+      <label style="color:var(--accent);font-weight:700;font-size:13px">收到金額</label>
+      <input name="amount" inputmode="decimal" required placeholder="0" style="font-size:22px;font-weight:700;padding:14px">
+      <label>方式</label><select name="method">${['匯款','現金','支票','刷卡'].map(x=>`<option>${x}</option>`).join('')}</select>
+      <label>說明（選填）</label><input name="note" placeholder="訂金 30%">
+      <div style="height:16px"></div><button class="btn">儲存</button>
+    </form></div>
+    <button class="btn gray" data-go="project|${p.id}">取消</button>`;
+}
+A.savePay=(f,pid)=>{
+  const amt=num(f.amount.value); if(amt<=0)return false;
+  DB.payments.push({id:nid('pay'),userId:S.uid,projectId:pid,date:f.date.value||today(),
+    amount:amt,method:f.method.value,note:f.note.value.trim()});
+  save();flash('已登記收款 NT$'+money(amt));S.ptab='pay';A.go('project',pid);return false;
+};
 
 function pSettings(){
   const s=mySet();
@@ -611,10 +941,13 @@ function pQuoteNew(){
 A.newQuote=type=>{
   const seq=DB.quotes.filter(q=>q.userId===S.uid).reduce((m,q)=>Math.max(m,q.seq),0)+1;
   const id=nid('q');
-  DB.quotes.push({id,userId:S.uid,seq,type,projectName:'',cusName:'',cusContact:'',cusPhone:'',cusAddress:'',
+  const pid=S.newQuoteProject||0, p=pid?proj(pid):null;
+  DB.quotes.push({id,userId:S.uid,seq,type,projectId:pid,
+    projectName:p?p.name:'',cusName:p?p.customer:'',cusContact:'',
+    cusPhone:p?(p.phone||''):'',cusAddress:p?p.address:'',
     status:'draft',discount:0,taxOn:false,note:'',terms:mySet().terms||'',rootId:0,version:1,isLatest:true,
     created:now(),updated:now()});
-  save();A.go('quote',id,1);
+  S.newQuoteProject=0;save();A.go('quote',id,1);
 };
 
 function pQuote(){
@@ -625,10 +958,16 @@ function pQuote(){
   let out=`<div class="steps">${[1,2,3,4].map(i=>`<div class="${i<=step?'on':''}"></div>`).join('')}</div>`;
 
   if(step===1){
+    const ps=myProjects();
     out+=`<div class="card"><h2>第 2 步 · 客戶與案場</h2>
       <form onsubmit="return A.saveStep1(this,${q.id})">
-        <label>案名（會用在報價單編號）</label><input name="projectName" value="${h(q.projectName)}" placeholder="文山路住宅整體裝修">
-        <label>客戶名稱</label><input name="cusName" value="${h(q.cusName)}" placeholder="陳先生" required>
+        <label>屬於哪個案場</label>
+        <select name="projectId" onchange="A.pickProject(this)">
+          <option value="0">（先不指定，之後再歸戶）</option>
+          ${ps.map(p=>`<option value="${p.id}"${q.projectId===p.id?' selected':''}>${h(p.name)}${p.customer?' · '+h(p.customer):''}</option>`).join('')}
+        </select>
+        <label>案名（會用在報價單編號）</label><input name="projectName" id="q_pname" value="${h(q.projectName)}" placeholder="文山路住宅整體裝修">
+        <label>客戶名稱</label><input name="cusName" id="q_cus" value="${h(q.cusName)}" placeholder="陳先生" required>
         <div class="row"><div><label>聯絡人</label><input name="cusContact" value="${h(q.cusContact)}"></div>
           <div><label>電話</label><input name="cusPhone" inputmode="tel" value="${h(q.cusPhone)}"></div></div>
         <label>案場地址</label><input name="cusAddress" value="${h(q.cusAddress)}">
@@ -722,7 +1061,14 @@ function pQuote(){
 A.saveStep1=(f,id)=>{
   const q=DB.quotes.find(x=>x.id===id);
   ['projectName','cusName','cusContact','cusPhone','cusAddress'].forEach(k=>q[k]=f[k].value.trim());
+  q.projectId=parseInt(f.projectId.value)||0;
   q.updated=now();save();A.go('quote',id,2);return false;
+};
+A.pickProject=sel=>{
+  const p=proj(parseInt(sel.value)||0); if(!p)return;
+  const pn=$('#q_pname'), cs=$('#q_cus');
+  if(pn&&!pn.value)pn.value=p.name;
+  if(cs&&!cs.value)cs.value=p.customer||'';
 };
 A.toggleNewTrade=()=>{
   const s=$('#f_trade');$('#newTradeBox').style.display=s.value==='__new'?'block':'none';
@@ -824,7 +1170,6 @@ function pExpEdit(){
 }
 function expForm(e){
   const projects=DB.projects.filter(p=>p.userId===S.uid);
-  const quotes=DB.quotes.filter(q=>q.userId===S.uid&&q.isLatest);
   const mats=DB.lib.filter(l=>l.userId===S.uid&&l.kind==='material').sort((a,b)=>b.useCount-a.useCount).slice(0,10);
   const vendors=[...new Set(DB.expenses.filter(x=>x.userId===S.uid&&x.vendor).map(x=>x.vendor))].slice(0,20);
   if(!S.photosLoaded){pendingPhotos=e?(e.photos||[]).slice():[];S.photosLoaded=true;}
@@ -856,9 +1201,7 @@ function expForm(e){
       <div><label>付款方式</label><select name="pay">${pays.map(x=>
         `<option${e&&e.pay===x?' selected':''}>${x}</option>`).join('')}</select></div></div>
     <label>工種（選填）</label><input name="trade" placeholder="木作系統工程" value="${e?h(e.trade):''}">
-    <label>套用到報價單（選了才會算這個案賺多少）</label>
-    <select name="quoteId"><option value="0">（不套用）</option>
-      ${quotes.map(q=>`<option value="${q.id}"${e&&e.quoteId===q.id?' selected':''}>${h(quoteNo(q))} · ${h(q.cusName)}</option>`).join('')}</select>
+    ${pid?'':'<p class="muted" style="margin-top:8px">沒選案場也可以先存，之後在「案場總覽 → 去整理」一次歸戶。</p>'}
     <label>工單／收據照片（可多張）</label>
     <div class="pickrow">
       <button type="button" class="btn ghost" onclick="document.getElementById('camIn').click()">📷 拍照</button>
@@ -900,7 +1243,7 @@ A.saveExpense=(f,eid)=>{
   const amount=num(f.amount.value);
   if(amount<=0){flash('金額要填');render();return false;}
   const unit=readUnit(f,'e_unit');
-  const data={projectId:pid,quoteId:parseInt(f.quoteId.value)||0,date:f.date.value||today(),
+  const data={projectId:pid,quoteId:0,date:f.date.value||today(),
     trade:f.trade.value.trim(),category:f.category.value,name:f.name.value.trim(),
     qty:num(f.qty.value)||1,unit,amount,vendor:f.vendor.value.trim(),pay:f.pay.value,
     note:f.note.value.trim(),photos:pendingPhotos.slice()};
@@ -938,7 +1281,8 @@ function pExpenses(){
     <div class="tot big"><span>合計 ${rows.length} 筆</span><span class="v">NT$ ${money(sum)}</span></div>
     <div class="row" style="margin-top:10px">
       <button class="btn ghost" onclick="A.exportCsv()">匯出 Excel</button>
-      ${pid?`<button class="btn ghost" data-go="settle|${pid}">結算</button>`:''}</div>
+      ${pid?`<button class="btn ghost" data-go="expReport|${pid}">匯出 PDF</button>`:''}</div>
+    ${!pid?'<p class="muted" style="margin-top:8px">選一個案場後才能匯出含照片的 PDF 明細表。</p>':''}
   </div>${adSlot()}
   ${!rows.length?'<div class="center">這段期間沒有支出紀錄。</div>':
   `<div class="card"><ul class="list">${rows.map(e=>{
@@ -1023,6 +1367,119 @@ A.linkQuote=(f,pid)=>{
   save();flash(qid?'已套用報價單，可以看結算了':'已取消套用');render();return false;
 };
 
+/* ============ 請款單 ============ */
+function pInvoices(){
+  const list=(DB.invoices||[]).filter(x=>x.userId===S.uid).sort((a,b)=>b.id-a.id);
+  return `<div class="card"><h2>請款紀錄 <span class="tag">${list.length}</span></h2>
+    ${!list.length?'<p class="muted">還沒有請款單。到案場裡按「產生請款單」。</p>':
+    `<ul class="list">${list.map(iv=>`<li><div class="g">
+      <div class="t"><a href="#" data-go="invoicePrint|${iv.id}">${h(invoiceNo(iv))}</a></div>
+      <div class="s">${h((proj(iv.projectId)||{}).name||'')} · ${h(iv.date)} · ${h(iv.ratioLabel)}</div></div>
+      <div style="text-align:right"><div class="amt">NT$ ${money(iv.amount)}</div>
+      <button class="btn sm danger" style="margin-top:5px" onclick="A.delInvoice(${iv.id})">刪</button></div></li>`).join('')}</ul>`}
+  </div><button class="btn gray" data-go="home">← 回案場總覽</button>`;
+}
+A.delInvoice=id=>{if(!confirm('刪除這張請款單？'))return;DB.invoices=DB.invoices.filter(x=>x.id!==id);save();render();};
+
+function pInvoiceNew(){
+  const p=proj(S.arg); if(!p) return '<div class="center">找不到案場。</div>';
+  const s=projSum(p.id);
+  const src=S.invSrc||'quote';
+  const qs=projQuotes(p.id), es=projExpenses(p.id).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!S.invInit){S.invInit=1;S.invPick={};
+    qs.filter(q=>q.isLatest&&q.status!=='draft').forEach(q=>S.invPick['q'+q.id]=1);}
+  const picked=src==='quote'
+    ? qs.filter(q=>S.invPick['q'+q.id])
+    : es.filter(e=>S.invPick['e'+e.id]);
+  const base=src==='quote'
+    ? picked.reduce((a,q)=>a+totals(q.id).total,0)
+    : picked.reduce((a,e)=>a+e.amount,0);
+  const mode=S.invMode||'ratio';
+  const ratio=S.invRatio===undefined?40:S.invRatio;
+  const received=s.received;
+  let amount = mode==='full' ? base-received
+             : mode==='ratio' ? Math.round(base*ratio/100)
+             : num(S.invCustom||0);
+  if(amount<0)amount=0;
+  const label = mode==='full'?'全額請款':(mode==='ratio'?ratio+'% 期款':'自訂金額');
+  return `<div class="card"><h2>請款來源 · ${h(p.name)}</h2>
+    <div class="tabs">
+      <button class="${src==='quote'?'on':''}" onclick="A.invSrc('quote')">報價單</button>
+      <button class="${src==='exp'?'on':''}" onclick="A.invSrc('exp')">支出（代墊款）</button>
+    </div>
+    <ul class="list" style="margin-top:10px">
+    ${src==='quote'
+      ? (!qs.length?'<li><span class="muted">這個案場還沒有報價單。</span></li>':qs.map(q=>
+        `<li><button class="chk ${S.invPick['q'+q.id]?'on':''}" onclick="A.invPick('q${q.id}')" aria-label="選取"></button>
+         <div class="g"><div class="t">${h(quoteNo(q))}</div>
+         <div class="s">${h(q.cusName||'—')} · ${qItems(q.id).length} 項 · ${h(q.updated.slice(0,10))}${
+           q.status==='draft'?' · 草稿':(!q.isLatest?' · 舊版，已被取代':'')}</div></div>
+         <div class="amt">${money(totals(q.id).total)}</div></li>`).join(''))
+      : (!es.length?'<li><span class="muted">這個案場還沒有支出。</span></li>':es.map(e=>
+        `<li><button class="chk ${S.invPick['e'+e.id]?'on':''}" onclick="A.invPick('e${e.id}')" aria-label="選取"></button>
+         <div class="g"><div class="t">${h(e.name)}</div>
+         <div class="s">${h(e.date)} · ${h(e.category)}${e.vendor?' · '+h(e.vendor):''}</div></div>
+         <div class="amt">${money(e.amount)}</div></li>`).join(''))}
+    </ul>
+    <div class="tot big"><span>勾選合計（${picked.length} 筆）</span><span class="v">NT$ ${money(base)}</span></div>
+  </div>
+
+  <div class="card"><h2>這次要請多少</h2>
+    <div class="tabs">
+      <button class="${mode==='full'?'on':''}" onclick="A.invMode('full')">全額</button>
+      <button class="${mode==='ratio'?'on':''}" onclick="A.invMode('ratio')">按比例</button>
+      <button class="${mode==='custom'?'on':''}" onclick="A.invMode('custom')">自訂</button>
+    </div>
+    ${mode==='ratio'?`<label>期款比例</label>
+      <div class="chips" style="margin-bottom:8px">${[30,40,50,30].filter((v,i,a)=>a.indexOf(v)===i).map(r=>
+        `<button type="button" class="chip${ratio===r?' star':''}" onclick="A.invRatio(${r})">${r}%</button>`).join('')}
+        <button type="button" class="chip${[30,40,50].includes(ratio)?'':' star'}" onclick="A.invRatioAsk()">其他…</button></div>
+      <div class="muted">目前：合約總額 × ${ratio}%</div>`:''}
+    ${mode==='custom'?`<label>自訂請款金額</label>
+      <input inputmode="decimal" value="${S.invCustom||''}" oninput="A.invCustom(this.value)"
+        style="font-size:20px;font-weight:700;padding:13px">`:''}
+    ${mode==='full'?'<p class="muted">全額請款 = 勾選合計 − 已收款</p>':''}
+    <div class="nums3" style="margin-top:11px">
+      <div><div class="v">${money(base)}</div><div class="k">${src==='quote'?'合約總額':'代墊合計'}</div></div>
+      <div><div class="v">${money(received)}</div><div class="k">已收款</div></div>
+      <div><div class="v" style="color:var(--accent)">${money(amount)}</div><div class="k">本次請款</div></div>
+    </div>
+    <label>付款期限</label><input type="date" id="inv_due" value="${S.invDue||addDays(today(),10)}" onchange="A.invDue(this.value)">
+    <label>備註（會印在請款單上）</label>
+    <textarea id="inv_note" style="min-height:70px" oninput="A.invNote(this.value)" placeholder="本期為施工中期款，木作與水電已完成驗收">${h(S.invNote||'')}</textarea>
+  </div>
+  <button class="btn" onclick="A.makeInvoice(${p.id})">產生請款單 PDF</button>
+  <button class="btn gray" data-go="project|${p.id}">取消</button>`;
+}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);
+  return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}
+A.invSrc=v=>{S.invSrc=v;render();};
+A.invPick=k=>{S.invPick=S.invPick||{};S.invPick[k]=!S.invPick[k];render();};
+A.invMode=m=>{S.invMode=m;render();};
+A.invRatio=r=>{S.invRatio=r;render();};
+A.invRatioAsk=()=>{const v=prompt('請輸入百分比（只填數字）','35');if(v!==null){S.invRatio=Math.max(1,Math.min(100,parseInt(v)||0));render();}};
+A.invCustom=v=>{S.invCustom=v;const el=document.activeElement;S.keep=1;render();};
+A.invDue=v=>{S.invDue=v;};
+A.invNote=v=>{S.invNote=v;};
+A.makeInvoice=pid=>{
+  const p=proj(pid), s=projSum(pid), src=S.invSrc||'quote';
+  const qs=projQuotes(pid), es=projExpenses(pid);
+  const picked=src==='quote'?qs.filter(q=>S.invPick['q'+q.id]):es.filter(e=>S.invPick['e'+e.id]);
+  if(!picked.length){alert('至少要勾一筆。');return;}
+  const base=src==='quote'?picked.reduce((a,q)=>a+totals(q.id).total,0):picked.reduce((a,e)=>a+e.amount,0);
+  const mode=S.invMode||'ratio', ratio=S.invRatio===undefined?40:S.invRatio;
+  let amount=mode==='full'?base-s.received:mode==='ratio'?Math.round(base*ratio/100):num(S.invCustom||0);
+  if(amount<=0){alert('請款金額要大於 0。');return;}
+  const seq=(DB.invoices||[]).filter(x=>x.userId===S.uid&&x.projectId===pid).reduce((m,x)=>Math.max(m,x.seq),0)+1;
+  const iv={id:nid('inv'),userId:S.uid,projectId:pid,seq,type:src,date:today(),
+    dueDate:S.invDue||addDays(today(),10),srcIds:picked.map(x=>x.id),base,received:s.received,
+    amount,ratioLabel:mode==='full'?'全額請款':(mode==='ratio'?ratio+'% 期款':'自訂金額'),
+    note:S.invNote||'',created:now()};
+  DB.invoices.push(iv);save();
+  S.invInit=0;S.invPick={};S.invNote='';
+  A.go('invoicePrint',iv.id);
+};
+
 /* ============ 列印頁 ============ */
 function vPrint(id){
   const q=DB.quotes.find(x=>x.id===id&&x.userId===S.uid);
@@ -1054,9 +1511,9 @@ function vPrint(id){
       ${s.logo?`<img class="logoimg" src="${s.logo}" alt="公司 LOGO">`:''}
       <div>${s.company?`<div class="co">${h(s.company)}</div>`:''}${sub?`<div class="cosub">${h(sub)}</div>`:''}</div></div>
       <div class="tt"><h1>報價單</h1><div class="meta">
-        <div><span>單　　號</span>${h(quoteNo(q))}</div>
-        <div><span>報價日期</span>${fmt(d)}</div>
-        <div><span>有效期限</span>${fmt(valid)}</div></div></div></div>
+        <span>單　號</span><div>${h(quoteNo(q))}</div>
+        <span>報價日期</span><div>${fmt(d)}</div>
+        <span>有效期限</span><div>${fmt(valid)}</div></div></div></div>
     <div class="rule"></div>
     <div class="client">
       ${q.cusName?`<div><span class="k">客　戶</span>${h(q.cusName)}</div>`:''}
@@ -1094,6 +1551,151 @@ function vPrint(id){
   <div class="pbar"><button class="g" data-go="quote|${id}|4">返回</button>
     <button onclick="window.print()">列印／存成 PDF</button></div>`;
 }
+
+/* ============ 請款單列印頁 ============ */
+function vInvoice(id){
+  const iv=(DB.invoices||[]).find(x=>x.id===id&&x.userId===S.uid);
+  if(!iv) return '<div class="center">找不到請款單。</div>';
+  const p=proj(iv.projectId)||{}, s=mySet(), u=me();
+  const rows=iv.type==='quote'
+    ? iv.srcIds.map(qid=>{const q=DB.quotes.find(x=>x.id===qid);if(!q)return null;
+        const its=qItems(q.id), trades=[...new Set(its.map(i=>i.trade).filter(Boolean))];
+        return {a:quoteNo(q),b:q.projectName||'工程款',
+          c:(trades.join(' · ')||'—')+'，共 '+its.length+' 項',
+          d:q.updated.slice(5,10).replace('-','/'),e:totals(q.id).total};}).filter(Boolean)
+    : iv.srcIds.map(eid=>{const e=DB.expenses.find(x=>x.id===eid);if(!e)return null;
+        return {a:e.date.slice(5).replace('-','/'),b:e.name,
+          c:[e.category,e.vendor].filter(Boolean).join(' · '),d:'',e:e.amount};}).filter(Boolean);
+  const sub=[s.taxId?'統一編號 '+s.taxId:'',s.owner?'負責人 '+s.owner:''].filter(Boolean).join('　│　');
+  const f1=[s.company,s.address].filter(Boolean).join('　│　');
+  const f2=[s.tel?'TEL '+s.tel:'',s.mobile?'M '+s.mobile:'',s.email].filter(Boolean).join('　│　');
+  const hasBank=s.bankName||s.bankAccount;
+  const notes=(iv.note||'').split(/\r?\n/).filter(x=>x.trim());
+  const remain=iv.base-iv.received-iv.amount;
+  return `<div class="paper">
+    <div class="phead"><div class="brand">
+      ${s.logo?`<img class="logoimg" src="${s.logo}" alt="LOGO">`:''}
+      <div>${s.company?`<div class="co">${h(s.company)}</div>`:''}${sub?`<div class="cosub">${h(sub)}</div>`:''}</div></div>
+      <div class="tt"><h1 style="letter-spacing:8px">請款單</h1><div class="meta">
+        <span>單　號</span><div>${h(invoiceNo(iv))}</div>
+        <span>請款日期</span><div>${h(iv.date.replace(/-/g,' / '))}</div>
+        <span>付款期限</span><div>${h((iv.dueDate||'').replace(/-/g,' / '))}</div></div></div></div>
+    <div class="rule"></div>
+    <div class="client">
+      ${p.customer?`<div><span class="k">客　戶</span>${h(p.customer)}</div>`:''}
+      <div><span class="k">案　場</span>${h(p.name||'')}</div>
+      ${p.phone?`<div><span class="k">聯絡電話</span>${h(p.phone)}</div>`:''}
+      ${p.address?`<div style="grid-column:1/-1"><span class="k">案場地址</span>${h(p.address)}</div>`:''}
+    </div>
+    <div class="sech">請款依據（${iv.type==='quote'?'合併 '+rows.length+' 張報價單':'代墊支出 '+rows.length+' 筆'}）</div>
+    <table class="q"><thead><tr>
+      <th style="width:24%">${iv.type==='quote'?'報價單號':'日期'}</th>
+      <th style="width:46%">內容</th><th class="c" style="width:12%">日期</th>
+      <th class="r" style="width:18%">金額</th></tr></thead><tbody>
+      ${rows.map(r=>`<tr><td>${h(r.a)}</td>
+        <td><b>${h(r.b)}</b>${r.c?`<div class="spec">${h(r.c)}</div>`:''}</td>
+        <td class="c">${h(r.d)}</td><td class="r">${money(r.e)}</td></tr>`).join('')}
+      <tr class="sb"><td colspan="3"><b>${iv.type==='quote'?'合約總額':'代墊合計'}</b></td>
+        <td class="r"><b>${money(iv.base)}</b></td></tr>
+    </tbody></table>
+    <div class="totwrap"><table>
+      <tr><td class="k">${iv.type==='quote'?'合約總額':'代墊合計'}</td><td class="v">${money(iv.base)}</td></tr>
+      ${iv.received>0?`<tr><td class="k">已收款</td><td class="v">－${money(iv.received)}</td></tr>`:''}
+      <tr><td class="k">本期請款</td><td class="v">${h(iv.ratioLabel)}</td></tr>
+      <tr class="g"><td class="k">本次請款金額</td><td class="v">NT$ ${money(iv.amount)}</td></tr>
+    </table></div>
+    ${(notes.length||hasBank||remain>0)?`<div class="blocks">
+      <div class="bk"><h4>付款說明</h4><ul>
+        ${notes.map(x=>`<li>${h(x.trim())}</li>`).join('')}
+        ${remain>0?`<li>餘款 NT$ ${money(remain)} 於後續期程請領</li>`:''}
+        <li>請於付款期限前完成匯款，並回傳匯款後五碼</li>
+      </ul></div>
+      ${hasBank?`<div class="bk bank"><h4>匯款資訊</h4>
+        ${s.bankName?`<div><span class="k">銀　行</span>${h(s.bankName)}${s.bankCode?'（'+h(s.bankCode)+'）':''}</div>`:''}
+        ${s.bankAccount?`<div><span class="k">帳　號</span>${h(s.bankAccount)}</div>`:''}
+        ${s.bankHolder?`<div><span class="k">戶　名</span>${h(s.bankHolder)}</div>`:''}</div>`:''}
+    </div>`:''}
+    <div class="sign">
+      <div class="sc"><div class="t">請 款 廠 商</div>
+        ${s.company?`<div>${h(s.company)}</div>`:''}
+        <div>${h(u.name)}${u.phone?'　'+h(u.phone):''}</div>
+        ${s.stamp?`<img class="stampimg" src="${s.stamp}" alt="印章">`:''}</div>
+      <div class="sc"><div class="t">客 戶 簽 收</div>
+        <div>簽名：　　　　　　　　　　</div><div>日期：　　　年　　月　　日</div></div></div>
+    ${(f1||f2)?`<div class="pfoot"><div>${h(f1)}</div><div>${h(f2)}</div></div>`:''}
+  </div>
+  <div class="pbar"><button class="g" data-go="project|${iv.projectId}">返回</button>
+    <button onclick="window.print()">列印／存成 PDF</button></div>`;
+}
+
+/* ============ 支出明細表（含照片）============ */
+function vExpReport(){
+  const pid=S.arg, p=proj(pid)||{};
+  const s=mySet(), sum=projSum(pid);
+  const withPhotos=S.repPhotos!==false, newPage=S.repNewPage!==false;
+  const es=projExpenses(pid).sort((a,b)=>a.date.localeCompare(b.date));
+  const byCat={}; es.forEach(e=>byCat[e.category]=(byCat[e.category]||0)+e.amount);
+  const total=es.reduce((a,e)=>a+e.amount,0);
+  const photos=[]; const refOf={};
+  es.forEach(e=>{(e.photos||[]).forEach(d=>{
+    const tag='P'+(photos.length+1);
+    photos.push({tag,name:e.name,sub:e.date.slice(5).replace('-','/')+' · '+(e.vendor||e.category)+' · NT$ '+money(e.amount),data:d});
+    (refOf[e.id]=refOf[e.id]||[]).push(tag);});});
+  const sub=[s.taxId?'統一編號 '+s.taxId:'',s.owner?'負責人 '+s.owner:''].filter(Boolean).join('　│　');
+  return `<div class="repbar noprint">
+      <label><input type="checkbox" ${withPhotos?'checked':''} onchange="A.repPhotos(this.checked)"> 含照片附錄（${photos.length} 張）</label>
+      <label><input type="checkbox" ${newPage?'checked':''} onchange="A.repNewPage(this.checked)" ${withPhotos?'':'disabled'}> 照片另起一頁</label>
+    </div>
+    <div class="paper">
+    <div class="phead"><div class="brand">
+      ${s.logo?`<img class="logoimg" src="${s.logo}" alt="LOGO">`:''}
+      <div>${s.company?`<div class="co">${h(s.company)}</div>`:''}${sub?`<div class="cosub">${h(sub)}</div>`:''}</div></div>
+      <div class="tt"><h1 style="letter-spacing:6px">支出明細表</h1><div class="meta">
+        <span>案　場</span><div>${h(p.name||'')}</div>
+        ${p.customer?`<span>客　戶</span><div>${h(p.customer)}</div>`:''}
+        <span>列印日期</span><div>${today().replace(/-/g,' / ')}</div></div></div></div>
+    <div class="rule"></div>
+    <div class="sech">結算摘要</div>
+    <div class="rsum">
+      <div class="rbox"><div class="n">${es.length}</div><div class="l">支出筆數</div></div>
+      <div class="rbox"><div class="n">${money(total)}</div><div class="l">支出總額</div></div>
+      <div class="rbox"><div class="n">${money(sum.quoted)}</div><div class="l">報價金額</div></div>
+      <div class="rbox hl"><div class="n">${money(sum.profit)}</div><div class="l">毛利　${sum.rate}%</div></div>
+    </div>
+    <div class="rcats">${Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+      `<span class="rcat">${h(k)} <b>${money(v)}</b></span>`).join('')}</div>
+    <div class="sech">支出明細</div>
+    <div class="scrollx"><table class="q rep"><thead><tr>
+      <th class="c" style="width:7%">日期</th><th style="width:9%">分類</th><th style="width:13%">工種</th>
+      <th style="width:22%">項目／材料</th><th style="width:14%">廠商</th>
+      <th class="c" style="width:8%">數量</th><th class="r" style="width:9%">單價</th>
+      <th class="r" style="width:11%">金額</th><th class="c" style="width:7%">照片</th></tr></thead>
+    <tbody>${es.map(e=>{
+      const unit=e.qty?qty(e.qty)+(e.unit||''):'';
+      const price=e.qty>0?Math.round(e.amount/e.qty):e.amount;
+      return `<tr><td class="c">${h(e.date.slice(5).replace('-','/'))}</td>
+        <td><span class="tagc">${h(e.category)}</span></td><td>${h(e.trade||'—')}</td>
+        <td><b>${h(e.name)}</b>${e.note?`<div class="spec">${h(e.note)}</div>`:''}</td>
+        <td>${h(e.vendor||'—')}</td><td class="c">${h(unit)}</td>
+        <td class="r">${money(price)}</td><td class="r">${money(e.amount)}</td>
+        <td class="c pref">${withPhotos?(refOf[e.id]||[]).join(' '):''}</td></tr>`;}).join('')}
+      <tr class="sb"><td colspan="7"><b>合　計</b></td><td class="r"><b>${money(total)}</b></td><td></td></tr>
+    </tbody></table></div>
+    ${(withPhotos&&photos.length)?`
+      ${newPage?'<div class="pgbreak"></div>':''}
+      <div class="sech" style="margin-top:16px">工單／收據影像（共 ${photos.length} 張）</div>
+      <div class="pgrid">${photos.map(x=>`<div class="pcard">
+        <div class="pframe"><img src="${x.data}" alt="${h(x.tag)} ${h(x.name)}"></div>
+        <div class="pcap"><div class="c1"><span class="pbadge">${x.tag}</span>${h(x.name)}</div>
+        <div class="c2">${h(x.sub)}</div></div></div>`).join('')}</div>`:''}
+    <div class="pfoot"><div>${h([s.company,'支出明細表'].filter(Boolean).join(' · '))}</div>
+      <div>${h(p.name||'')} · ${today()}</div></div>
+  </div>
+  <div class="pbar"><button class="g" data-go="project|${pid}">返回</button>
+    <button onclick="window.print()">列印／存成 PDF</button></div>`;
+}
+A.repPhotos=v=>{S.repPhotos=v;render();};
+A.repNewPage=v=>{S.repNewPage=v;render();};
 
 /* ============ 管理後台 ============ */
 function vAdmin(){
