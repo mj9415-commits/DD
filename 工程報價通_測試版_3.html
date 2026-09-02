@@ -318,10 +318,36 @@ function libTouch(kind,name,trade,unit,price){
   else DB.lib.push({id:nid('l'),userId:S.uid,kind,trade,name,unit:unit||'',lastPrice:price||0,starred:0,useCount:1});
 }
 function officialHas(name){return DB.lib.some(l=>l.userId===null&&l.kind==='item'&&l.name===name);}
+function unitList(){
+  return [...new Set(DB.lib.filter(l=>l.kind==='unit'&&(l.userId===null||l.userId===S.uid)).map(l=>l.name))];
+}
+/** 單位下拉：清單 + 「＋ 自訂單位…」，打過的單位會自動存起來下次可以選 */
+function unitSelect(idBase,cur){
+  const us=unitList(), known=us.includes(cur);
+  return `<select name="unit" id="${idBase}" onchange="A.unitToggle('${idBase}')">
+      <option value="">（選單位）</option>
+      ${us.map(u=>`<option${cur===u?' selected':''}>${h(u)}</option>`).join('')}
+      <option value="__new"${(cur&&!known)?' selected':''}>＋ 自訂單位…</option>
+    </select>
+    <div id="${idBase}_new" style="display:${(cur&&!known)?'block':'none'};margin-top:6px">
+      <input name="unitNew" id="${idBase}_newin" placeholder="例：式" value="${(cur&&!known)?h(cur):''}"></div>`;
+}
+function readUnit(f,idBase){
+  let u=f.unit?f.unit.value:'';
+  if(u==='__new')u=f.unitNew?f.unitNew.value.trim():'';
+  u=(u||'').trim();
+  if(u&&!unitList().includes(u))
+    DB.lib.push({id:nid('l'),userId:S.uid,kind:'unit',trade:'',name:u,unit:'',lastPrice:0,starred:0,useCount:1});
+  return u;
+}
 
 /* ============ 路由 ============ */
 const A={};window.A=A;
-A.go=(page,arg,arg2)=>{S.page=page;S.arg=arg;S.arg2=arg2;render();window.scrollTo(0,0);};
+A.go=(page,arg,arg2)=>{
+  if(page!=='quote')S.editItem=0;
+  if(page==='expNew'||page==='expEdit'){pendingPhotos=[];S.photosLoaded=false;}
+  S.page=page;S.arg=arg;S.arg2=arg2;render();window.scrollTo(0,0);
+};
 A.logout=()=>{S.uid=null;A.go('login');};
 
 function render(){
@@ -331,6 +357,7 @@ function render(){
   const adminPages=['adash','aquotes','aquote','aexpenses','aprices','alib','acand','ausers','aads'];
   if(adminPages.includes(S.page)){app.className='a';app.innerHTML=vAdmin();bind();return;}
   app.className='u';app.innerHTML=vUser();bind();
+  if(S.page==='expNew'||S.page==='expEdit')A.drawPrev();
 }
 function bind(){
   document.querySelectorAll('[data-go]').forEach(el=>{
@@ -391,9 +418,9 @@ function adSlot(){
 function vUser(){
   const u=me(),f=fx();
   const body={home:pHome,settings:pSettings,account:pAccount,quotes:pQuotes,quoteNew:pQuoteNew,
-    quote:pQuote,expNew:pExpNew,expenses:pExpenses,settle:pSettle}[S.page]||pHome;
+    quote:pQuote,expNew:pExpNew,expEdit:pExpEdit,expenses:pExpenses,settle:pSettle,stars:pStars}[S.page]||pHome;
   const titles={settings:'公司設定',account:'帳號設定',quotes:'報價單',quoteNew:'新報價單',
-    quote:'報價單',expNew:'登記支出',expenses:'支出',settle:'結算'};
+    quote:'報價單',expNew:'登記支出',expEdit:'修改支出',expenses:'支出',settle:'結算',stars:'我的常用'};
   return `<div class="top"><h1>工程報價通${titles[S.page]?' · '+titles[S.page]:''}</h1>
     <button class="lnk" onclick="A.logout()">登出</button></div>
     <div class="wrap">${f?`<div class="flash">${h(f)}</div>`:''}${body()}</div>${nav(S.page)}`;
@@ -465,6 +492,8 @@ function pSettings(){
   <div style="height:12px"></div>
   <button class="btn">儲存設定</button></form>
   <div style="height:10px"></div>
+  <button class="btn gray" data-go="stars">⭐ 我的常用項目與單位</button>
+  <div style="height:10px"></div>
   <button class="btn gray" data-go="account">帳號與密碼設定</button>`;
 }
 A.saveSettings=f=>{
@@ -512,16 +541,61 @@ A.saveAccount=f=>{
 };
 
 function pQuotes(){
-  const qs=DB.quotes.filter(q=>q.userId===S.uid).sort((a,b)=>b.updated.localeCompare(a.updated));
-  return `<button class="btn" data-go="quoteNew">＋ 建立報價單</button>${adSlot()}
-  ${!qs.length?'<div class="center">還沒有報價單，按上面的按鈕開一張吧。</div>':
+  const kw=(S.qKw||'').trim();
+  const all=DB.quotes.filter(q=>q.userId===S.uid);
+  const qs=all.filter(q=>!kw||(q.projectName||'').includes(kw)||(q.cusName||'').includes(kw)||quoteNo(q).includes(kw))
+    .sort((a,b)=>b.updated.localeCompare(a.updated));
+  return `<button class="btn" data-go="quoteNew">＋ 建立報價單</button>
+  ${all.length>4?`<div class="card" style="padding:12px">
+    <input id="qkw" placeholder="搜尋案名、客戶或單號" value="${h(kw)}" oninput="A.searchQuotes(this.value)"></div>`:''}
+  ${adSlot()}
+  ${!qs.length?`<div class="center">${all.length?'沒有符合的報價單。':'還沒有報價單，按上面的按鈕開一張吧。'}</div>`:
   `<div class="card"><ul class="list">${qs.map(q=>{const t=totals(q.id);
     return `<li><div class="g"><div class="t"><a href="#" data-go="quote|${q.id}|${q.status==='draft'?2:4}">${h(quoteNo(q))}</a>
       ${q.status==='draft'?'<span class="pill draft">草稿</span>':(!q.isLatest?'<span class="pill old">舊版</span>':'<span class="pill ok">最新</span>')}</div>
-      <div class="s">${h(q.cusName||'未填客戶')} · ${h(q.updated.slice(0,16))}</div></div>
+      <div class="s">${h(q.cusName||'未填客戶')} · ${h(q.updated.slice(0,16))} · ${qItems(q.id).length} 項</div></div>
       <div style="text-align:right"><div class="amt">NT$ ${money(t.total)}</div>
-      <button class="btn sm gray" style="margin-top:5px" data-go="print|${q.id}">PDF</button></div></li>`;}).join('')}</ul></div>`}`;
+      <div style="margin-top:5px;display:flex;gap:5px;justify-content:flex-end">
+        <button class="btn sm gray" data-go="print|${q.id}">PDF</button>
+        <button class="btn sm danger" onclick="A.delQuote(${q.id})">刪</button></div></div></li>`;}).join('')}</ul></div>`}`;
 }
+A.searchQuotes=v=>{
+  S.qKw=v;
+  const el=document.activeElement, pos=el&&el.selectionStart;
+  render();
+  const box=$('#qkw'); if(box){box.focus(); try{box.setSelectionRange(pos,pos);}catch(e){}}
+};
+A.delQuote=id=>{
+  const q=DB.quotes.find(x=>x.id===id);
+  if(!confirm('確定刪除「'+quoteNo(q)+'」？這張單的項目也會一起刪掉。'))return;
+  DB.items=DB.items.filter(i=>i.quoteId!==id);
+  DB.quotes=DB.quotes.filter(x=>x.id!==id);
+  DB.expenses.forEach(e=>{if(e.quoteId===id)e.quoteId=0;});
+  save();flash('已刪除');render();
+};
+
+function pStars(){
+  const stars=DB.lib.filter(l=>l.userId===S.uid&&l.kind==='item'&&l.starred)
+    .sort((a,b)=>b.useCount-a.useCount);
+  const units=DB.lib.filter(l=>l.userId===S.uid&&l.kind==='unit');
+  return `<div class="card"><h2>⭐ 我的常用項目 <span class="tag">${stars.length}</span></h2>
+    <p class="muted" style="margin-bottom:10px">建報價單時會置頂顯示，點一下就自動帶入名稱、單位和上次的單價。</p>
+    ${!stars.length?'<p class="muted">還沒有收藏。在報價單的項目列表按 ⭐ 就會加進來。</p>':
+    `<ul class="list">${stars.map(s=>`<li><div class="g"><div class="t">${h(s.name)}</div>
+      <div class="s">${h(s.trade||'不分工種')}${s.unit?' · '+h(s.unit):''}${s.lastPrice>0?' · 上次 '+money(s.lastPrice):''} · 用過 ${s.useCount} 次</div></div>
+      <button class="btn sm danger" onclick="A.unstar(${s.id})">取消</button></li>`).join('')}</ul>`}
+  </div>
+  <div class="card"><h2>我自訂的單位 <span class="tag">${units.length}</span></h2>
+    <p class="muted" style="margin-bottom:10px">你打過的單位會自動存起來，下次在下拉選單就選得到。</p>
+    ${!units.length?'<p class="muted">還沒有自訂單位。在單位欄選「＋ 自訂單位…」打一個，就會存起來。</p>':
+    `<div class="chips">${units.map(u=>`<span class="chip">${h(u.name)}
+      <button type="button" onclick="A.delUnit(${u.id})" aria-label="刪除 ${h(u.name)}"
+       style="background:none;border:0;color:var(--danger);cursor:pointer;padding:0 0 0 5px">✕</button></span>`).join('')}</div>`}
+  </div>
+  <button class="btn gray" data-go="settings">← 回設定</button>`;
+}
+A.unstar=id=>{const l=DB.lib.find(x=>x.id===id);if(l)l.starred=0;save();flash('已取消收藏');render();};
+A.delUnit=id=>{DB.lib=DB.lib.filter(l=>l.id!==id);save();flash('已刪除這個單位');render();};
 
 function pQuoteNew(){
   const types=[['simple','一般簡易報價','小案、臨時追加、修繕，不分工種直接列項目'],
@@ -566,29 +640,33 @@ function pQuote(){
       .map(l=>l.name).filter((v,i,a)=>a.indexOf(v)===i);
     const stars=DB.lib.filter(l=>l.userId===S.uid&&l.kind==='item'&&l.starred).sort((a,b)=>b.useCount-a.useCount).slice(0,12);
     const sugg=DB.lib.filter(l=>l.kind==='item'&&(l.userId===null||l.userId===S.uid));
-    const units=DB.lib.filter(l=>l.kind==='unit').map(l=>l.name);
-    out+=`<div class="card"><h2>第 3 步 · 工程項目 <span class="tag">${its.length} 項</span></h2>
-      ${stars.length?`<p class="muted" style="margin-bottom:6px">⭐ 我的常用（點一下自動帶入）</p>
-        <div class="chips" style="margin-bottom:14px">${stars.map((s,i)=>
+    const ed=S.editItem?DB.items.find(i=>i.id===S.editItem&&i.quoteId===q.id):null;
+    const curTrade=ed?ed.trade:S.lastTrade;
+    out+=`<div class="card" id="itemCard"><h2>${ed?'修改項目':'第 3 步 · 工程項目'} <span class="tag">${its.length} 項</span></h2>
+      ${(!ed&&stars.length)?`<p class="muted" style="margin-bottom:6px">⭐ 我的常用（點一下自動帶入）</p>
+        <div class="chips" style="margin-bottom:14px">${stars.map(s=>
           `<button type="button" class="chip star" onclick="A.fill(${s.id})">${h(s.name)}</button>`).join('')}</div>`:''}
-      <form id="itemForm" onsubmit="return A.addItem(this,${q.id})">
+      <form id="itemForm" onsubmit="return A.saveItem(this,${q.id})">
         <label>工種</label>
         <select name="trade" id="f_trade" onchange="A.toggleNewTrade()">
           <option value="">（不分工種）</option>
-          ${trades.map(t=>`<option${S.lastTrade===t?' selected':''}>${h(t)}</option>`).join('')}
+          ${trades.map(t=>`<option${curTrade===t?' selected':''}>${h(t)}</option>`).join('')}
           <option value="__new">＋ 自訂新工種…</option></select>
         <div id="newTradeBox" style="display:none"><label>新工種名稱</label><input name="tradeNew" placeholder="例：玻璃工程"></div>
         <label>項目名稱</label>
-        <input name="name" id="f_name" list="dlItems" required placeholder="天花板平釘" autocomplete="off" onchange="A.autoUnit()">
+        <input name="name" id="f_name" list="dlItems" required placeholder="天花板平釘" autocomplete="off"
+          value="${ed?h(ed.name):''}" onchange="A.autoUnit()">
         <datalist id="dlItems">${sugg.map(s=>`<option value="${h(s.name)}">${h(s.trade)}</option>`).join('')}</datalist>
-        <label>規格說明（選填，會印在項目下方小字）</label><input name="spec" placeholder="矽酸鈣板 6mm ／ 含角材批土">
+        <label>規格說明（選填，會印在項目下方小字）</label>
+        <input name="spec" placeholder="矽酸鈣板 6mm ／ 含角材批土" value="${ed?h(ed.spec):''}">
         <div class="row">
-          <div style="flex:0 0 96px"><label>單位</label><input name="unit" id="f_unit" list="dlUnits" placeholder="坪" autocomplete="off">
-            <datalist id="dlUnits">${units.map(u=>`<option value="${h(u)}">`).join('')}</datalist></div>
-          <div><label>數量</label><input name="qty" id="f_qty" inputmode="decimal" value="1"></div>
-          <div><label>單價</label><input name="price" id="f_price" inputmode="decimal" placeholder="0"></div>
+          <div style="flex:0 0 120px"><label>單位</label>${unitSelect('f_unit',ed?ed.unit:'')}</div>
+          <div><label>數量</label><input name="qty" id="f_qty" inputmode="decimal" value="${ed?qty(ed.qty):'1'}"></div>
+          <div><label>單價</label><input name="price" id="f_price" inputmode="decimal" placeholder="0" value="${ed&&ed.price?ed.price:''}"></div>
         </div>
-        <div style="height:14px"></div><button class="btn">＋ 加入這一項</button>
+        <div style="height:14px"></div>
+        <button class="btn">${ed?'儲存修改':'＋ 加入這一項'}</button>
+        ${ed?'<div style="height:9px"></div><button type="button" class="btn gray" onclick="A.cancelEdit()">取消</button>':''}
       </form></div>`;
     if(its.length){
       let cur=null,rows='';
@@ -598,6 +676,7 @@ function pQuote(){
           <div class="s">${h(it.spec)}${it.spec?' · ':''}${h(it.unit)} × ${qty(it.qty)} @ ${money(it.price)}</div></div>
           <div style="text-align:right"><div class="amt">NT$ ${money(it.qty*it.price)}</div>
           <div style="margin-top:5px;display:flex;gap:5px;justify-content:flex-end">
+            <button class="btn sm ghost" onclick="A.editItem(${it.id})">改</button>
             <button class="btn sm gray" onclick="A.starItem(${it.id})" title="收進常用">⭐</button>
             <button class="btn sm danger" onclick="A.delItem(${it.id})">刪</button></div></div></li></ul>`;
       });
@@ -648,13 +727,25 @@ A.saveStep1=(f,id)=>{
 A.toggleNewTrade=()=>{
   const s=$('#f_trade');$('#newTradeBox').style.display=s.value==='__new'?'block':'none';
 };
+A.unitToggle=idBase=>{
+  const s=$('#'+idBase), box=$('#'+idBase+'_new');
+  if(!s||!box)return;
+  box.style.display=s.value==='__new'?'block':'none';
+  if(s.value==='__new'){const i=$('#'+idBase+'_newin');if(i)i.focus();}
+};
+function setUnit(idBase,val){
+  const s=$('#'+idBase); if(!s||!val)return;
+  for(const o of s.options){if(o.value===val){s.value=val;A.unitToggle(idBase);return;}}
+  s.value='__new';A.unitToggle(idBase);
+  const i=$('#'+idBase+'_newin'); if(i)i.value=val;
+}
 A.autoUnit=()=>{
   const v=$('#f_name').value.trim();
   const m=DB.lib.find(l=>l.kind==='item'&&l.name===v&&(l.userId===null||l.userId===S.uid));
   if(!m) return;
-  const u=$('#f_unit');
-  // 只在單位還是空的、而且使用者沒有正在打那一格時才自動帶入
-  if(m.unit&&!u.value&&document.activeElement!==u)u.value=m.unit;
+  const s=$('#f_unit');
+  // 只在單位還沒選、而且使用者沒有正在動那一格時才自動帶入
+  if(m.unit&&s&&!s.value&&document.activeElement!==s)setUnit('f_unit',m.unit);
   const sel=$('#f_trade');
   if(m.trade&&sel.value===''&&document.activeElement!==sel){
     for(const o of sel.options){if(o.value===m.trade)o.selected=true;}
@@ -663,24 +754,38 @@ A.autoUnit=()=>{
 A.fill=libId=>{
   const l=DB.lib.find(x=>x.id===libId);if(!l)return;
   const sel=$('#f_trade');for(const o of sel.options){if(o.value===l.trade)o.selected=true;}
-  $('#f_name').value=l.name;$('#f_unit').value=l.unit||'';
+  $('#f_name').value=l.name;setUnit('f_unit',l.unit||'');
   if(l.lastPrice>0)$('#f_price').value=l.lastPrice;
   $('#f_qty').focus();
 };
-A.addItem=(f,id)=>{
+A.editItem=iid=>{S.editItem=iid;render();scrollToForm();};
+A.cancelEdit=()=>{S.editItem=0;render();scrollToForm();};
+function scrollToForm(){
+  const c=$('#itemCard'); if(c)c.scrollIntoView({block:'start',behavior:'auto'});
+}
+A.saveItem=(f,id)=>{
   const trade=(f.tradeNew&&f.tradeNew.value.trim())||(f.trade.value==='__new'?'':f.trade.value);
   const name=f.name.value.trim(); if(!name) return false;
-  const sort=qItems(id).reduce((m,i)=>Math.max(m,i.sort),0)+1;
-  DB.items.push({id:nid('i'),quoteId:id,trade,name,spec:f.spec.value.trim(),unit:f.unit.value.trim(),
-    qty:num(f.qty.value)||1,price:num(f.price.value),sort});
+  const unit=readUnit(f,'f_unit');
+  const price=num(f.price.value), qn=num(f.qty.value)||1, spec=f.spec.value.trim();
+  if(S.editItem){
+    const it=DB.items.find(i=>i.id===S.editItem);
+    Object.assign(it,{trade,name,spec,unit,qty:qn,price});
+    S.editItem=0;flash('項目已更新');
+  }else{
+    const sort=qItems(id).reduce((m,i)=>Math.max(m,i.sort),0)+1;
+    DB.items.push({id:nid('i'),quoteId:id,trade,name,spec,unit,qty:qn,price,sort});
+  }
   if(trade)libTouch('trade',trade,'','',0);
-  libTouch('item',name,trade,f.unit.value.trim(),num(f.price.value));
+  libTouch('item',name,trade,unit,price);
   const q=DB.quotes.find(x=>x.id===id);q.updated=now();
-  S.lastTrade=trade;save();render();return false;
+  S.lastTrade=trade;save();render();scrollToForm();return false;
 };
 A.delItem=iid=>{
   if(!confirm('刪除這一項？'))return;
-  DB.items=DB.items.filter(i=>i.id!==iid);save();render();
+  DB.items=DB.items.filter(i=>i.id!==iid);
+  if(S.editItem===iid)S.editItem=0;
+  save();render();
 };
 A.starItem=iid=>{
   const it=DB.items.find(i=>i.id===iid);if(!it)return;
@@ -711,38 +816,49 @@ A.copyVersion=id=>{
 
 /* ---- 支出 ---- */
 let pendingPhotos=[];
-function pExpNew(){
+function pExpNew(){return expForm(null);}
+function pExpEdit(){
+  const e=DB.expenses.find(x=>x.id===S.arg&&x.userId===S.uid);
+  if(!e) return '<div class="center">找不到這筆支出。</div>';
+  return expForm(e);
+}
+function expForm(e){
   const projects=DB.projects.filter(p=>p.userId===S.uid);
   const quotes=DB.quotes.filter(q=>q.userId===S.uid&&q.isLatest);
   const mats=DB.lib.filter(l=>l.userId===S.uid&&l.kind==='material').sort((a,b)=>b.useCount-a.useCount).slice(0,10);
-  const vendors=[...new Set(DB.expenses.filter(e=>e.userId===S.uid&&e.vendor).map(e=>e.vendor))].slice(0,20);
-  pendingPhotos=[];
-  return `<div class="card"><h2>登記一筆花費</h2>
-  ${mats.length?`<p class="muted" style="margin-bottom:6px">常打的項目</p>
+  const vendors=[...new Set(DB.expenses.filter(x=>x.userId===S.uid&&x.vendor).map(x=>x.vendor))].slice(0,20);
+  if(!S.photosLoaded){pendingPhotos=e?(e.photos||[]).slice():[];S.photosLoaded=true;}
+  const pid=e?e.projectId:(S.lastProject||0);
+  const cats=['材料費','工資','機具租賃','運費','雜支'];
+  const pays=['現金','匯款','月結','刷卡','支票'];
+  return `<div class="card"><h2>${e?'修改這筆支出':'登記一筆花費'}</h2>
+  ${(!e&&mats.length)?`<p class="muted" style="margin-bottom:6px">常打的項目</p>
     <div class="chips" style="margin-bottom:14px">${mats.map(m=>
       `<button type="button" class="chip" onclick="A.setName('e_name','${h(m.name)}')">${h(m.name)}</button>`).join('')}</div>`:''}
-  <form onsubmit="return A.addExpense(this)">
+  <form onsubmit="return A.saveExpense(this,${e?e.id:0})">
     <label>案場</label>
     <select name="projectId" id="e_pid" onchange="A.togglePnew()"><option value="0">（先不指定）</option>
-      ${projects.map(p=>`<option value="${p.id}">${h(p.name)}</option>`).join('')}
+      ${projects.map(p=>`<option value="${p.id}"${pid===p.id?' selected':''}>${h(p.name)}</option>`).join('')}
       <option value="__new">＋ 新增案場…</option></select>
     <div id="pnewBox" style="display:none"><label>新案場名稱</label><input name="projectNew" placeholder="文山路住宅"></div>
-    <div class="row"><div><label>日期</label><input type="date" name="date" value="${today()}"></div>
-      <div><label>分類</label><select name="category">${['材料費','工資','機具租賃','運費','雜支']
-        .map(c=>`<option>${c}</option>`).join('')}</select></div></div>
-    <label>項目／材料名稱</label><input name="name" id="e_name" required placeholder="矽酸鈣板 6mm">
-    <div class="row"><div style="flex:0 0 96px"><label>單位</label><input name="unit" placeholder="片"></div>
-      <div><label>數量</label><input name="qty" inputmode="decimal" value="1"></div></div>
+    <div class="row"><div><label>日期</label><input type="date" name="date" value="${e?e.date:today()}"></div>
+      <div><label>分類</label><select name="category">${cats.map(c=>
+        `<option${e&&e.category===c?' selected':''}>${c}</option>`).join('')}</select></div></div>
+    <label>項目／材料名稱</label>
+    <input name="name" id="e_name" required placeholder="矽酸鈣板 6mm" value="${e?h(e.name):''}">
+    <div class="row"><div style="flex:0 0 120px"><label>單位</label>${unitSelect('e_unit',e?e.unit:'')}</div>
+      <div><label>數量</label><input name="qty" inputmode="decimal" value="${e?qty(e.qty):'1'}"></div></div>
     <label style="color:var(--accent);font-weight:700;font-size:13px">金額（必填）</label>
-    <input name="amount" inputmode="decimal" required placeholder="0" style="font-size:22px;font-weight:700;padding:14px">
-    <div class="row"><div><label>廠商／店家</label><input name="vendor" list="dlV" autocomplete="off">
+    <input name="amount" inputmode="decimal" required placeholder="0" value="${e?e.amount:''}"
+      style="font-size:22px;font-weight:700;padding:14px">
+    <div class="row"><div><label>廠商／店家</label><input name="vendor" list="dlV" autocomplete="off" value="${e?h(e.vendor):''}">
       <datalist id="dlV">${vendors.map(v=>`<option value="${h(v)}">`).join('')}</datalist></div>
-      <div><label>付款方式</label><select name="pay">${['現金','匯款','月結','刷卡','支票']
-        .map(x=>`<option>${x}</option>`).join('')}</select></div></div>
-    <label>工種（選填）</label><input name="trade" placeholder="木作系統工程">
+      <div><label>付款方式</label><select name="pay">${pays.map(x=>
+        `<option${e&&e.pay===x?' selected':''}>${x}</option>`).join('')}</select></div></div>
+    <label>工種（選填）</label><input name="trade" placeholder="木作系統工程" value="${e?h(e.trade):''}">
     <label>套用到報價單（選了才會算這個案賺多少）</label>
     <select name="quoteId"><option value="0">（不套用）</option>
-      ${quotes.map(q=>`<option value="${q.id}">${h(quoteNo(q))} · ${h(q.cusName)}</option>`).join('')}</select>
+      ${quotes.map(q=>`<option value="${q.id}"${e&&e.quoteId===q.id?' selected':''}>${h(quoteNo(q))} · ${h(q.cusName)}</option>`).join('')}</select>
     <label>工單／收據照片（可多張）</label>
     <div class="pickrow">
       <button type="button" class="btn ghost" onclick="document.getElementById('camIn').click()">📷 拍照</button>
@@ -751,11 +867,14 @@ function pExpNew(){
     <input type="file" id="camIn" accept="image/*" capture="environment" hidden onchange="A.pickPhotos(this)">
     <input type="file" id="libIn" accept="image/*" multiple hidden onchange="A.pickPhotos(this)">
     <div id="prev" style="display:flex;gap:11px;flex-wrap:wrap;margin-top:11px"></div>
-    <label>備註</label><input name="note">
+    <label>備註</label><input name="note" value="${e?h(e.note):''}">
     <div style="height:16px"></div>
-    <button class="btn" onclick="A.again=false">儲存</button>
-    <div style="height:9px"></div>
-    <button class="btn ghost" onclick="A.again=true">儲存並繼續登記下一筆</button>
+    ${e?`<button class="btn">儲存修改</button>
+        <div style="height:9px"></div>
+        <button type="button" class="btn gray" data-go="expenses">取消</button>`
+      :`<button class="btn" onclick="A.again=false">儲存</button>
+        <div style="height:9px"></div>
+        <button class="btn ghost" onclick="A.again=true">儲存並繼續登記下一筆</button>`}
   </form></div>`;
 }
 A.setName=(id,v)=>{$('#'+id).value=v;};
@@ -774,20 +893,27 @@ A.drawPrev=()=>{
      <button type="button" class="px" onclick="A.rmPhoto(${i})" aria-label="刪除第 ${i+1} 張">✕</button></span>`).join('');
 };
 A.rmPhoto=i=>{pendingPhotos.splice(i,1);A.drawPrev();};
-A.addExpense=f=>{
+A.saveExpense=(f,eid)=>{
   let pid=parseInt(f.projectId.value)||0;
   const pnew=f.projectNew?f.projectNew.value.trim():'';
   if(pnew){pid=nid('p');DB.projects.push({id:pid,userId:S.uid,name:pnew,address:''});}
   const amount=num(f.amount.value);
   if(amount<=0){flash('金額要填');render();return false;}
-  DB.expenses.push({id:nid('e'),userId:S.uid,projectId:pid,quoteId:parseInt(f.quoteId.value)||0,
-    date:f.date.value||today(),trade:f.trade.value.trim(),category:f.category.value,
-    name:f.name.value.trim(),qty:num(f.qty.value)||1,unit:f.unit.value.trim(),amount,
-    vendor:f.vendor.value.trim(),pay:f.pay.value,note:f.note.value.trim(),photos:pendingPhotos.slice()});
-  if(f.name.value.trim())libTouch('material',f.name.value.trim(),f.trade.value.trim(),f.unit.value.trim(),0);
-  pendingPhotos=[];save();
-  flash('已登記：'+f.name.value.trim()+' NT$'+money(amount));
-  A.go(A.again?'expNew':'expenses');return false;
+  const unit=readUnit(f,'e_unit');
+  const data={projectId:pid,quoteId:parseInt(f.quoteId.value)||0,date:f.date.value||today(),
+    trade:f.trade.value.trim(),category:f.category.value,name:f.name.value.trim(),
+    qty:num(f.qty.value)||1,unit,amount,vendor:f.vendor.value.trim(),pay:f.pay.value,
+    note:f.note.value.trim(),photos:pendingPhotos.slice()};
+  if(eid){
+    Object.assign(DB.expenses.find(x=>x.id===eid),data);
+    flash('已更新：'+data.name+' NT$'+money(amount));
+  }else{
+    DB.expenses.push(Object.assign({id:nid('e'),userId:S.uid},data));
+    flash('已登記：'+data.name+' NT$'+money(amount));
+  }
+  if(data.name)libTouch('material',data.name,data.trade,unit,0);
+  S.lastProject=pid;pendingPhotos=[];S.photosLoaded=false;save();
+  A.go((!eid&&A.again)?'expNew':'expenses');return false;
 };
 function pExpenses(){
   const from=S.expFrom||today().slice(0,7)+'-01', to=S.expTo||today(), pid=S.expPid||0;
@@ -796,6 +922,12 @@ function pExpenses(){
   const sum=rows.reduce((s,e)=>s+e.amount,0);
   const projects=DB.projects.filter(p=>p.userId===S.uid);
   return `<div class="card">
+    <div class="chips" style="margin-bottom:12px">
+      <button type="button" class="chip" onclick="A.range('m')">本月</button>
+      <button type="button" class="chip" onclick="A.range('lm')">上個月</button>
+      <button type="button" class="chip" onclick="A.range('30')">近 30 天</button>
+      <button type="button" class="chip" onclick="A.range('all')">全部</button>
+    </div>
     <form onsubmit="return A.filterExp(this)">
       <div class="row"><div><label>起</label><input type="date" name="from" value="${from}"></div>
         <div><label>迄</label><input type="date" name="to" value="${to}"></div></div>
@@ -815,9 +947,23 @@ function pExpenses(){
       <div class="g"><div class="t">${h(e.name)}</div>
       <div class="s">${h(e.date)} · ${h(e.category)}${p?' · '+h(p.name):''}${e.vendor?' · '+h(e.vendor):''}${e.photos&&e.photos.length>1?' · 📷'+e.photos.length:''}</div></div>
       <div style="text-align:right"><div class="amt">NT$ ${money(e.amount)}</div>
-      <button class="btn sm danger" style="margin-top:5px" onclick="A.delExpense(${e.id})">刪</button></div></li>`;}).join('')}</ul></div>`}`;
+      <div style="margin-top:5px;display:flex;gap:5px;justify-content:flex-end">
+        <button class="btn sm ghost" data-go="expEdit|${e.id}">改</button>
+        <button class="btn sm danger" onclick="A.delExpense(${e.id})">刪</button></div></div></li>`;}).join('')}</ul></div>`}`;
 }
 A.filterExp=f=>{S.expFrom=f.from.value;S.expTo=f.to.value;S.expPid=parseInt(f.pid.value)||0;render();return false;};
+A.range=k=>{
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  if(k==='m'){S.expFrom=today().slice(0,7)+'-01';S.expTo=today();}
+  else if(k==='lm'){const y=d.getFullYear(),m=d.getMonth();
+    const s=new Date(y,m-1,1), e=new Date(y,m,0);
+    S.expFrom=s.getFullYear()+'-'+p(s.getMonth()+1)+'-01';
+    S.expTo=e.getFullYear()+'-'+p(e.getMonth()+1)+'-'+p(e.getDate());}
+  else if(k==='30'){const s=new Date(Date.now()-29*864e5);
+    S.expFrom=s.getFullYear()+'-'+p(s.getMonth()+1)+'-'+p(s.getDate());S.expTo=today();}
+  else {S.expFrom='2000-01-01';S.expTo='2999-12-31';}
+  render();
+};
 A.delExpense=id=>{if(!confirm('刪除這筆支出？'))return;DB.expenses=DB.expenses.filter(e=>e.id!==id);save();render();};
 A.viewPhoto=id=>{
   const e=DB.expenses.find(x=>x.id===id);if(!e)return;
